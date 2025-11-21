@@ -113,3 +113,7 @@
 | **データベース** | **PostgreSQL** | Railsとの相性、JSON型サポート、将来の集計・分析に強い。店舗データや味覚ログの集計が扱いやすい。 |
 | **デプロイ** | **Render** | 無料〜低コストでデプロイでき、Railsアプリ運用の学習にも向く。PostgreSQLアドオンも利用しやすい。Heroku代替として現実的。 |
 | **認証** | **Devise** | ユーザー登録・ログイン・パスワード管理を担当。初期MVPで最も安定して使いやすい。 |
+
+## 画面遷移図
+### リンク(251121作成)
+https://www.figma.com/design/XP3ipDf9Kf6L6ieq1K77zL/TrueCup_%E3%82%A2%E3%83%97%E3%83%AA%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3?node-id=0-1&t=XjphK4WhoXd52MIs-1
