@@ -117,3 +117,5 @@
 ## 画面遷移図
 ### リンク(251121作成)
 https://www.figma.com/design/XP3ipDf9Kf6L6ieq1K77zL/TrueCup_%E3%82%A2%E3%83%97%E3%83%AA%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3?node-id=0-1&t=XjphK4WhoXd52MIs-1
+### ER図
+[![Image from Gyazo](https://i.gyazo.com/ce8ab21bc17ced2668eed364521e0ebf.png)](https://gyazo.com/ce8ab21bc17ced2668eed364521e0ebf)
