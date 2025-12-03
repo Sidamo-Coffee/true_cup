@@ -19,19 +19,33 @@
     <!-- ナビゲーション -->
     <nav class="flex items-center gap-3 text-xs md:text-sm">
       <% if user_signed_in? %>
-        <%= link_to "マイページ", mypage_path, class: "text-stone-700 hover:text-stone-900" %>
+        <!-- ログイン後ナビ -->
+        <%= link_to "マイページ",
+              mypage_path,
+              class: "inline-flex items-center justify-center rounded-full
+                       px-3 py-1.5 md:px-4 md:py-2 font-semibold
+                       text-amber-50 bg-amber-700 hover:bg-amber-800 transition" %>
+
         <%= button_to "ログアウト",
               destroy_user_session_path,
               method: :delete,
               form: { data: { turbo: false } },
-              class: "rounded bg-slate-200 px-3 py-1 text-sm hover:bg-slate-300" %>
+              class: "text-stone-600 hover:text-stone-900 px-2 py-1" %>
       <% else %>
-        <%= link_to "このアプリについて", root_path, class: "hidden sm:inline text-stone-700 hover:text-stone-900" %>
-        <%= link_to "ログイン", new_user_session_path, class: "text-stone-700 hover:text-stone-900" %>
-        <%= link_to "無料で始める", new_user_registration_path, 
+        <!-- ログイン前ナビ -->
+        <%= link_to "このアプリについて",
+              root_path,
+              class: "hidden sm:inline text-stone-700 hover:text-stone-900" %>
+
+        <%= link_to "ログイン",
+              new_user_session_path,
+              class: "text-stone-700 hover:text-stone-900" %>
+
+        <%= link_to "無料で始める",
+              new_user_registration_path,
               class: "inline-flex items-center justify-center rounded-full 
-              px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-semibold 
-              text-amber-50 bg-amber-700 hover:bg-amber-800 transition" %>
+                       px-3 py-1.5 md:px-4 md:py-2 font-semibold 
+                       text-amber-50 bg-amber-700 hover:bg-amber-800 transition" %>
       <% end %>
     </nav>
   </div>
