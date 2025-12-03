@@ -16,10 +16,10 @@
       </p>
       <div class="flex flex-col sm:flex-row sm:items-center gap-4 justify-center">
         <%# TODO: Devise導入後に new_user_registration_path などに差し替え %>
-        <%= link_to "無料で味覚診断を始める", "#",
+        <%= link_to "無料で味覚診断を始める", new_user_registration_path,
             class: "inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-amber-50 bg-amber-700 hover:bg-amber-800 transition" %>
         <%# TODO: Devise導入後に new_user_session_path に差し替え %>
-        <%= link_to "ログインはこちら", "#",
+        <%= link_to "ログインはこちら", new_user_session_path,
             class: "text-sm font-medium underline underline-offset-4 text-amber-800 hover:text-amber-900" %>
       </div>
     </div>
@@ -91,9 +91,9 @@
       新しい一杯との出会いを、ここから始めてみませんか。
     </p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-      <%= link_to "会員登録してスタート（無料）", "#",
+      <%= link_to "会員登録してスタート（無料）", new_user_registration_path,
           class: "inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-stone-900 bg-amber-200 hover:bg-amber-300 transition" %>
-      <%= link_to "すでに登録済みの方はこちら（ログイン）", "#",
+      <%= link_to "すでに登録済みの方はこちら（ログイン）", new_user_session_path,
           class: "text-xs md:text-sm font-medium underline underline-offset-4" %>
     </div>
   </section>
