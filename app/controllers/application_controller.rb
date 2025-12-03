@@ -13,4 +13,12 @@ class ApplicationController < ActionController::Base
     # アカウント編集時にも name を使う場合に備えて
     devise_parameter_sanitizer.permit(:account_update, keys: [:name])
   end
+
+  def after_sign_in_path_for(resourse)
+    mypage_path
+  end
+
+  def after_sign_out_path_for(resourse_or_scope)
+    root_path
+  end
 end

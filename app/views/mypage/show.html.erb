@@ -1,0 +1,16 @@
+<div class="max-w-3xl mx-auto py-10">
+  <h1 class="text-2xl font-semibold mb-4">マイページ</h1>
+
+  <div class="rounded border px-4 py-3 mb-6">
+    <p class="text-sm text-gray-600">ログイン中のユーザー</p>
+    <p class="text-lg font-medium mt-1"><%= @user.name.presence || "名前未設定" %></p>
+    <p class="text-sm text-gray-600 mt-1"><%= @user.email %></p>
+  </div>
+
+  <div class="space-y-3">
+    <!-- 今後ここに「味覚診断へ」「コーヒー記録一覧へ」などのリンクを置いていく -->
+    <p class="text-gray-700">
+      ここに「味覚診断」「コーヒー記録」など、TrueCup のメイン機能への導線を配置していきます。
+    </p>
+  </div>
+</div>
