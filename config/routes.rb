@@ -1,7 +1,9 @@
 Rails.application.routes.draw do
   get "taste_diagnoses/new"
   get "taste_diagnoses/create"
-  devise_for :users
+  devise_for :users, controllers: {
+    registrations: "users/registrations"
+  }
   get "static_pages/top"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   root "static_pages#top"
