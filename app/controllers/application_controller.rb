@@ -14,7 +14,7 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(resourse)
-    mypage_path
+   new_taste_diagnosis_path
   end
 
   def after_sign_out_path_for(resourse_or_scope)
