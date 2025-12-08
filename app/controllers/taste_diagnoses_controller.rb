@@ -3,30 +3,48 @@ class TasteDiagnosesController < ApplicationController
 
   TASTE_QUESTIONS = [
     {
+      key: :chocolate,
+      title: "チョコレートを買うとき、どちらを選ぶ事が多いですか？",
+      options: [
+        { label: "甘めのミルクチョコレート", value: "milk_chocolate" },
+        { label: "ビターなダークチョコレート", value: "dark_chocolate"  },
+        { label: "チョコはあまり食べない",   value: "not_chocolate" },
+      ]
+    },
+    {
       key: :cake,
-      title: "好きなケーキは？",
+      title: "次の中で、コーヒーと合わせて食べたいと思うケーキはどれですか？",
       options: [
-        { label: "レアチーズケーキ", value: "rare_cheese" },
-        { label: "モンブラン",       value: "mont_blanc"  },
-        { label: "ガトーショコラ",   value: "gateau_chocolat" }
+        { label: "フルーツタルト", value: "fruit_tart" },
+        { label: "モンブラン", value: "mont_blanc"  },
+        { label: "ガトーショコラ", value: "gateau_chocolat"  }
       ]
     },
     {
-      key: :drink,
-      title: "普段よく飲む飲み物は？",
+      key: :dressing,
+      title: "サラダにドレッシングをかけるなら、次のうちどれが最も多いですか？",
       options: [
-        { label: "ブラックコーヒー", value: "black_coffee" },
-        { label: "カフェラテ",       value: "cafe_latte"    },
-        { label: "オレンジジュース", value: "orange_juice"  }
+        { label: "フレンチドレッシング", value: "french_dressing" },
+        { label: "和風しょうゆドレッシング",     value: "japanse_dressing"      },
+        { label: "ごまドレッシング", value: "sesame_dressing"          }
       ]
     },
     {
-      key: :snack,
-      title: "休憩中に食べたいお菓子は？",
+      key: :amount,
+      title: "コーヒーを飲むとき、以下のどちらの飲み方の方が好みですか？",
       options: [
-        { label: "ビターチョコレート", value: "bitter_chocolate" },
-        { label: "レモン系のお菓子",     value: "lemon_snack"      },
-        { label: "クッキー・ビスケット", value: "cookie"          }
+        { label: "あっさりめの濃さ を たっぷりめの量 で飲みたい", value: "much" },
+        { label: "どっしりめの濃さ を 控えめの量 で飲みたい",     value: "little"      },
+        { label: "わからない", value: "amount_neither"          }
+      ]
+    },
+    {
+      key: :dislike,
+      title: "以下のうち、食べるのをイメージしてより「苦手だ」と感じるのはどちらですか？",
+      options: [
+        { label: "酸っぱいレモン", value: "too_sour" },
+        { label: "カカオ95%以上のとても苦いチョコレート",     value: "too_bitter"      },
+        { label: "わからない、もしくは どちらも苦手ではない", value: "both_like"          }
       ]
     }
   ].freeze
