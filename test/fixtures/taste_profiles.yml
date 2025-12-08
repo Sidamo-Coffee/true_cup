@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  taste_type: 1
+  description: MyText
+  bitterness_score: 1
+  acidity_score: 1
+  sweetness_score: 1
+  body_score: 1
+  preferred_roast: 1
+  diagnosed_at: 2025-12-08 12:25:35
+
+two:
+  user: two
+  taste_type: 1
+  description: MyText
+  bitterness_score: 1
+  acidity_score: 1
+  sweetness_score: 1
+  body_score: 1
+  preferred_roast: 1
+  diagnosed_at: 2025-12-08 12:25:35
