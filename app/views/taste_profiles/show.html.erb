@@ -1,0 +1,64 @@
+<% content_for :title, "味覚診断結果" %>
+
+<div class="max-w-3xl mx-auto py-10 px-4">
+  <h1 class="text-2xl font-semibold mb-6 text-center">
+    あなたのコーヒー味覚診断結果
+  </h1>
+
+  <div class="bg-white rounded-xl shadow-sm p-6 space-y-4">
+    <p class="text-sm text-gray-600">
+      診断日：<%= l @taste_profile.diagnosed_at, format: :long %>
+    </p>
+
+    <p class="text-lg font-semibold">
+      あなたは
+      <% case @taste_profile.preferred_roast.to_sym %>
+      <% when :light %>
+        「浅煎りタイプ」
+      <% when :medium %>
+        「中煎りタイプ」
+      <% when :medium_dark %>
+        「中深煎りタイプ」
+      <% when :dark %>
+        「深煎りタイプ」
+      <% end %>
+      のコーヒーがおすすめです。
+    </p>
+
+    <p class="text-sm text-gray-800 leading-relaxed">
+      <%= @taste_profile.description %>
+    </p>
+
+    <div class="mt-6">
+      <h2 class="text-sm font-semibold mb-2">味わいバランス（1〜5）</h2>
+      <dl class="grid grid-cols-2 gap-2 text-sm">
+        <div>
+          <dt class="text-gray-500">苦味</dt>
+          <dd class="font-medium"><%= @taste_profile.bitterness_score %></dd>
+        </div>
+        <div>
+          <dt class="text-gray-500">酸味</dt>
+          <dd class="font-medium"><%= @taste_profile.acidity_score %></dd>
+        </div>
+        <div>
+          <dt class="text-gray-500">甘み</dt>
+          <dd class="font-medium"><%= @taste_profile.sweetness_score %></dd>
+        </div>
+        <div>
+          <dt class="text-gray-500">コク</dt>
+          <dd class="font-medium"><%= @taste_profile.body_score %></dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="mt-8 flex justify-center gap-4">
+    <%= link_to "もう一度診断する",
+                new_taste_diagnosis_path,
+                class: "px-4 py-2 rounded-full text-sm font-semibold border border-amber-700 text-amber-700 hover:bg-amber-50" %>
+
+    <%= link_to "マイページへ戻る",
+                mypage_path,
+                class: "px-4 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800" %>
+  </div>
+</div>

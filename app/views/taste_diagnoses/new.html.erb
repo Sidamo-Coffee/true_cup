@@ -1,0 +1,43 @@
+<% content_for :title, "味覚診断" %>
+
+<div class="max-w-3xl mx-auto py-10 px-4">
+  <h1 class="text-2xl font-semibold mb-6 text-center">
+    コーヒー味覚診断
+  </h1>
+
+  <p class="text-sm text-gray-600 mb-8 text-center">
+    いくつかの質問に直感でお答えください。<br>
+    あなたの「好きなコーヒーの傾向」を診断します。
+  </p>
+
+  <%= form_with url: taste_diagnosis_path, method: :post, local: true do %>
+    <div class="space-y-8">
+      <% @questions.each_with_index do |question, index| %>
+        <section class="bg-white rounded-xl shadow-sm p-6">
+          <h2 class="text-base font-semibold mb-4">
+            質問 <%= index + 1 %>：<%= question[:title] %>
+          </h2>
+
+          <div class="space-y-3">
+            <% question[:options].each do |option| %>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <%= radio_button_tag "answers[#{question[:key]}]",
+                                     option[:value],
+                                     false,
+                                     class: "h-4 w-4 border-gray-300" %>
+                <span class="text-sm text-gray-800">
+                  <%= option[:label] %>
+                </span>
+              </label>
+            <% end %>
+          </div>
+        </section>
+      <% end %>
+    </div>
+
+    <div class="mt-10 text-center">
+      <%= submit_tag "診断結果を見る",
+                     class: "inline-flex items-center justify-center px-6 py-3 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition" %>
+    </div>
+  <% end %>
+</div>

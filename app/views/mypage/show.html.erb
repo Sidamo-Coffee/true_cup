@@ -1,16 +1,104 @@
-<div class="max-w-3xl mx-auto py-10">
-  <h1 class="text-2xl font-semibold mb-4">マイページ</h1>
+<div class="max-w-3xl mx-auto py-10 px-4 space-y-8">
+  <!-- ユーザー情報 -->
+  <section>
+    <h1 class="text-2xl font-semibold mb-4">マイページ</h1>
 
-  <div class="rounded border px-4 py-3 mb-6">
-    <p class="text-sm text-gray-600">ログイン中のユーザー</p>
-    <p class="text-lg font-medium mt-1"><%= @user.name.presence || "名前未設定" %></p>
-    <p class="text-sm text-gray-600 mt-1"><%= @user.email %></p>
-  </div>
+    <div class="rounded-xl border px-4 py-3 bg-white shadow-sm">
+      <p class="text-xs text-gray-500">ログイン中のユーザー</p>
+      <p class="text-lg font-medium mt-1">
+        <%= @user.name.presence || "名前未設定" %>
+      </p>
+      <p class="text-sm text-gray-600 mt-1">
+        <%= @user.email %>
+      </p>
+    </div>
+  </section>
 
-  <div class="space-y-3">
-    <!-- 今後ここに「味覚診断へ」「コーヒー記録一覧へ」などのリンクを置いていく -->
-    <p class="text-gray-700">
-      ここに「味覚診断」「コーヒー記録」など、TrueCup のメイン機能への導線を配置していきます。
+  <!-- あなたの味覚タイプ（診断サマリー） -->
+  <section class="bg-white rounded-xl shadow-sm p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold">あなたの味覚タイプ</h2>
+
+      <% if @taste_profile.present? %>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+          診断済み
+        </span>
+      <% else %>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+          未診断
+        </span>
+      <% end %>
+    </div>
+
+    <% if @taste_profile.present? %>
+      <%# 簡易ラベル（preferred_roast を日本語にざっくりマッピング） %>
+      <% taste_label =
+        case @taste_profile.preferred_roast.to_s
+        when "light"       then "浅煎りタイプ"
+        when "medium"      then "中煎りタイプ"
+        when "medium_dark" then "中深煎りタイプ"
+        when "dark"        then "深煎りタイプ"
+        else "コーヒータイプ"
+        end
+      %>
+
+      <p class="text-sm text-gray-600 mb-1">
+        前回の診断日：
+        <%# l が設定されていればローカライズ、なければ素の日時 %>
+        <%= defined?(l) ? l(@taste_profile.diagnosed_at.to_date, format: :long) : @taste_profile.diagnosed_at.to_date %>
+      </p>
+
+      <p class="text-xl font-semibold text-amber-800 mb-2">
+        <%= taste_label %>
+      </p>
+
+      <p class="text-sm text-gray-700 mb-4">
+        <%= @taste_profile.description %>
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <%= link_to "診断結果の詳細を見る",
+                    taste_profile_path,
+                    class: "inline-flex items-center justify-center px-4 py-3 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition w-full sm:w-auto" %>
+
+        <%= link_to "もう一度診断する",
+                    new_taste_diagnosis_path,
+                    class: "inline-flex items-center justify-center px-4 py-3 rounded-full text-sm font-semibold border border-amber-700 text-amber-700 hover:bg-amber-50 transition w-full sm:w-auto" %>
+      </div>
+    <% else %>
+      <p class="text-sm text-gray-700 mb-4">
+        まだ味覚診断が実施されていません。<br>
+        簡単な質問に答えるだけで、あなたに合ったコーヒーの傾向を診断できます。
+      </p>
+
+      <%= link_to "味覚診断をはじめる",
+                  new_taste_diagnosis_path,
+                  class: "inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition" %>
+    <% end %>
+  </section>
+
+  <!-- コーヒー記録エリア（MVP向けに枠だけ用意） -->
+  <section class="bg-white rounded-xl shadow-sm p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold">コーヒー記録</h2>
+      <span class="text-xs text-gray-400">機能準備中</span>
+    </div>
+
+    <p class="text-sm text-gray-600 mb-4">
+      ここに「最近のコーヒー記録（3件）」や「もっと見る」ボタンを表示します。<br>
+      MVPではまず味覚診断の実装を優先し、このエリアは後から機能を追加していきます。
     </p>
-  </div>
+
+    <div class="flex flex-wrap gap-3">
+      <%= link_to "コーヒーを記録する",
+                  "#",
+                  class: "inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold border border-gray-300 text-gray-400 cursor-not-allowed",
+                  aria: { disabled: true } %>
+
+      <%= link_to "記録一覧を見る",
+                  "#",
+                  class: "inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold border border-gray-300 text-gray-400 cursor-not-allowed",
+                  aria: { disabled: true } %>
+    </div>
+  </section>
 </div>
