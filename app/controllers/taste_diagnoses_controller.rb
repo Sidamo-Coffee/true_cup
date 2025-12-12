@@ -132,71 +132,69 @@ class TasteDiagnosesController < ApplicationController
   # スコア計算
   # ============
   def calculate_scores(answers)
+    # 0〜10 の中央値スタート
     scores = {
-      bitterness: 1,
-      acidity:   1,
-      sweetness: 1,
-      body:      1
+      bitterness: 5,
+      acidity:    5,
+      sweetness:  5, # MVP未使用だが保存はOK
+      body:       5
     }
 
-    # チョコ
+    # チョコ（小〜中幅）
     case answers[:chocolate]
     when "milk_chocolate"
-      scores[:bitterness] -= 1
+      scores[:bitterness] -= 2  # 苦味を下げる（浅〜中煎り寄り）
     when "dark_chocolate"
-      scores[:bitterness] += 1
-      scores[:body]       += 1
+      scores[:bitterness] += 2  # 苦味↑（中深〜深寄り）
+      scores[:body]       += 2  # コク↑
     end
 
-    # ケーキ
+    # ケーキ（fruit_tart / gateau は“大幅”）
     case answers[:cake]
     when "fruit_tart"
-      scores[:acidity] += 2
+      scores[:acidity] += 4     # 酸味を大幅加点（浅煎り寄り）
     when "mont_blanc"
-      scores[:bitterness] += 1
-      scores[:body]       += 1
+      scores[:bitterness] += 2  # 苦味↑（中〜中深寄り）
+      scores[:body]       += 2  # コク↑
     when "gateau_chocolat"
-      scores[:bitterness] += 2
-      scores[:body]       += 1
+      scores[:bitterness] += 4  # 苦味を大幅加点（深煎り寄り）
+      scores[:body]       += 2  # コク↑
     end
 
-    # ドレッシング
+    # ドレッシング（french は“大幅”＋コク減点）
     case answers[:dressing]
     when "french_dressing"
-      scores[:acidity] += 2
-      scores[:body]    -= 1
+      scores[:acidity] += 4     # 酸味を大幅加点（浅煎り寄り）
+      scores[:body]    -= 2     # コク↓
     when "japanese_dressing"
-      scores[:acidity] += 1
-      scores[:body]    += 1
+      scores[:acidity] += 2     # 酸味↑（中煎り寄り）
+      scores[:body]    += 2     # コク↑
     when "sesame_dressing"
-      scores[:bitterness] += 1
-      scores[:body]       += 1
+      scores[:bitterness] += 2  # 苦味↑（中深〜深寄り）
+      scores[:body]       += 2  # コク↑
     end
 
-    # 量・濃さ
+    # 量・濃さ（little はコク“大幅”）
     case answers[:amount]
     when "much"
-      scores[:acidity] += 1
-      scores[:body]    -= 1
+      scores[:acidity] += 2     # 酸味↑（浅〜中寄り）
+      scores[:body]    -= 2     # コク↓
     when "little"
-      scores[:bitterness] += 1
-      scores[:body]       += 2
+      scores[:bitterness] += 2  # 苦味↑
+      scores[:body]       += 4  # コクを大幅加点（中深〜深寄り）
     end
 
-    # 苦手な方
+    # 苦手（中幅の相互トレード）
     case answers[:dislike]
     when "too_sour"
-      scores[:bitterness] += 1
-      scores[:acidity]    -= 1
+      scores[:bitterness] += 2  # 苦味↑（中深〜深寄り）
+      scores[:acidity]    -= 2  # 酸味↓
     when "too_bitter"
-      scores[:acidity]    += 1
-      scores[:bitterness] -= 1
-    when "both_like"
-      # 今はスコア変化なし
+      scores[:acidity]    += 2  # 酸味↑（浅〜中寄り）
+      scores[:bitterness] -= 2  # 苦味↓
     end
 
-    # 1〜5 にクリップ
-    scores.transform_values! { |v| v.clamp(1, 5) }
+    scores.transform_values! { |v| v.clamp(0, 10) }
     scores
   end
 
@@ -208,24 +206,44 @@ class TasteDiagnosesController < ApplicationController
     taste_type      = :medium_like
     description     = ""
 
-    if acidity >= 4 && bitterness <= 3
+    # 浅煎り：酸味高め＆苦味控えめ
+    if acidity >= 8 && bitterness <= 3
       preferred_roast = :light
       taste_type      = :light_like
       description = "フルーツのような酸味や爽やかさを楽しめる、浅煎りタイプです。明るく軽やかな味わいのコーヒーがお好きな傾向があります。"
-    elsif bitterness.between?(2, 4) && body.between?(2, 4) && acidity.between?(2, 4)
-      preferred_roast = :medium
-      taste_type      = :medium_like
-      description = "酸味・苦味・コクのバランスが取れた、中煎りタイプです。毎日飲んでも飲み疲れしにくい、ほどよいコーヒーがお好きな傾向があります。"
-    elsif bitterness >= 4 && body >= 3 && acidity <= 3
+
+    # 深煎り：苦味・コクがかなり高く、酸味は低め
+    elsif bitterness >= 8 && body >= 8 && acidity <= 3
+      preferred_roast = :dark
+      taste_type      = :dark_like
+      description = "ビターな味わいとどっしりしたコクが際立つ、深煎りタイプです。濃厚で余韻の長いコーヒーを好む傾向があります。"
+
+    # 中深煎り：苦味・コクが高めで酸味は控えめ
+    elsif bitterness >= 7 && body >= 6 && acidity <= 4
       preferred_roast = :medium_dark
       taste_type      = :medium_dark_like
       description = "香ばしさとしっかりしたコクを楽しめる、中深煎りタイプです。カフェオレやスイーツと合わせても負けない力強さが特徴です。"
+
+    # 中煎り：全体が中庸〜やや寄り（“バランス”帯）
+    elsif acidity >= 7 || bitterness.between?(4, 6) && body.between?(4, 6) && acidity.between?(4, 6)
+      preferred_roast = :medium
+      taste_type      = :medium_like
+      description = "酸味・苦味・コクのバランスが取れた、中煎りタイプです。毎日飲んでも飲み疲れしにくい、ほどよいコーヒーがお好きな傾向があります。"
+
+    # どこにも強く当てはまらない場合：近いものへ寄せる（MVPでは簡略化）
     else
-      preferred_roast = :dark
-      taste_type      = :dark_like
-      description = "ビターな味わいとどっしりしたコクが際立つ、深煎りタイプです。濃厚で余韻の長いコーヒーを好む、大人の味覚傾向と言えます。"
+      # 迷ったら、苦味/コクが強い方を優先して中深〜深に寄せる
+      if bitterness >= 7 || body >= 7
+        preferred_roast = :medium_dark
+        taste_type      = :medium_dark_like
+        description = "香ばしさとコクを楽しめる、中深煎り寄りのタイプです。好みに合わせて深煎りも相性が良い可能性があります。"
+      else
+        preferred_roast = :medium
+        taste_type      = :medium_like
+        description = "全体のバランスが良いタイプです。気分やシーンに合わせて幅広いコーヒーを楽しめます。"
+      end
     end
 
-    [ preferred_roast, taste_type, description ]
-  end
+  [preferred_roast, taste_type, description]
+end
 end
