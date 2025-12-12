@@ -18,6 +18,6 @@ class TasteProfile < ApplicationRecord
 
   validates :bitterness_score, :acidity_score, :sweetness_score, :body_score,
             presence: true,
-            numericality: { only_integer: true, in: 1..5 }
+            numericality: { only_integer: true, in: 0..10 }
   validates :diagnosed_at, :taste_type, :preferred_roast, presence: true
 end
