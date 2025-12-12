@@ -244,6 +244,6 @@ class TasteDiagnosesController < ApplicationController
       end
     end
 
-  [preferred_roast, taste_type, description]
+  [ preferred_roast, taste_type, description ]
 end
 end
