@@ -1,7 +1,5 @@
 Rails.application.routes.draw do
-  get "taste_profiles/show"
-  get "taste_diagnoses/new"
-  get "taste_diagnoses/create"
+
   devise_for :users, controllers: {
     registrations: "users/registrations"
   }
