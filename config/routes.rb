@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
-
   devise_for :users, controllers: {
     registrations: "users/registrations"
   }
@@ -8,6 +7,7 @@ Rails.application.routes.draw do
   root "static_pages#top"
   resource :taste_diagnosis, only: %i[new create]
   resource :taste_profile, only: %i[show]
+  resources :coffee_logs
 
   get "mypage", to: "mypage#show", as: :mypage
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

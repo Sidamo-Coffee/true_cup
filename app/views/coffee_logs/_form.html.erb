@@ -1,0 +1,100 @@
+<%= form_with model: coffee_log, class: "space-y-6" do |f| %>
+  <% if coffee_log.errors.any? %>
+    <div class="p-4 rounded border">
+      <ul class="list-disc pl-5">
+        <% coffee_log.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :drank_on, "日付", class: "block text-sm font-medium" %>
+    <%= f.date_field :drank_on, class: "mt-1 w-full rounded border px-3 py-2" %>
+  </div>
+
+  <div>
+    <%= f.label :place, "場所（お店 or 自宅 or その他）", class: "block text-sm font-medium" %>
+    <div class="mt-2 flex gap-6">
+      <% [["お店", :cafe], ["自宅", :home], ["その他", :other]].each do |label, value| %>
+        <label class="inline-flex items-center gap-2">
+          <%= f.radio_button :place, value %>
+          <span><%= label %></span>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div>
+    <%= f.label :cafe_name, "店舗名（任意）", class: "block text-sm font-medium" %>
+    <%= f.text_field :cafe_name, class: "mt-1 w-full rounded border px-3 py-2" %>
+  </div>
+
+  <div>
+    <%= f.label :coffee_name, "商品名 or メニュー名 （わかる範囲でOK!）", class: "block text-sm font-medium" %>
+    <%= f.text_field :coffee_name, class: "mt-1 w-full rounded border px-3 py-2", placeholder: "例：ブラジル / 特製ブレンド" %>
+  </div>
+
+  <div>
+    <%= f.label :roast_level, "飲んだ味の印象", class: "block text-sm font-medium" %>
+    <div class="mt-2 flex flex-wrap gap-4">
+      <% [["わからない", :unknown], ["フルーティ・さっぱり（浅煎り）", :light], ["バランス良い（中煎り）", :medium],
+      ["香ばしい・コク（中深煎り）", :medium_dark], ["苦め・どっしり（深煎り）", :dark]].each do |label, value| %>
+        <label class="inline-flex items-center gap-2">
+          <%= f.radio_button :roast_level, value %>
+          <span><%= label %></span>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div>
+      <p class="text-sm font-medium">酸味</p>
+      <div class="mt-2 flex gap-6">
+        <% [["弱い", 0], ["普通", 1], ["強い", 2]].each do |label, v| %>
+          <label class="inline-flex items-center gap-2">
+            <%= f.radio_button :acidity, v %>
+            <span><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <div>
+      <p class="text-sm font-medium">苦み</p>
+      <div class="mt-2 flex gap-6">
+        <% [["弱い", 0], ["普通", 1], ["強い", 2]].each do |label, v| %>
+          <label class="inline-flex items-center gap-2">
+            <%= f.radio_button :bitterness, v %>
+            <span><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="text-sm font-medium">好みの評価 (好みでない 1 ~ 5 好み)</p>
+    <div class="mt-2 flex flex-wrap gap-4">
+      <% (1..5).each do |v| %>
+        <label class="inline-flex items-center gap-2">
+          <%= f.radio_button :overall_rating, v %>
+          <span><%= "★" * v %></span>
+          <span class="text-xs text-gray-500">(<%= v %>)</span>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div>
+    <%= f.label :memo, "一言メモ（任意）", class: "block text-sm font-medium" %>
+    <%= f.text_area :memo, rows: 3, class: "mt-1 w-full rounded border px-3 py-2" %>
+  </div>
+
+  <div class="flex gap-3">
+    <%= f.submit "登録", class: "px-4 py-2 rounded bg-amber-700 text-white" %>
+    <%= link_to "記録一覧へ戻る", coffee_logs_path, class: "px-4 py-2 rounded border" %>
+  </div>
+<% end %>

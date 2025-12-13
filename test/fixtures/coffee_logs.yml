@@ -1,0 +1,31 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  drank_on: 2025-12-12
+  coffee_name: MyString
+  place: 1
+  cafe_name: MyString
+  roast_level: 1
+  brew_method: 1
+  bitterness: 1
+  acidity: 1
+  sweetness: 1
+  body: 1
+  overall_rating: 1
+  memo: MyText
+
+two:
+  user: two
+  drank_on: 2025-12-12
+  coffee_name: MyString
+  place: 1
+  cafe_name: MyString
+  roast_level: 1
+  brew_method: 1
+  bitterness: 1
+  acidity: 1
+  sweetness: 1
+  body: 1
+  overall_rating: 1
+  memo: MyText
