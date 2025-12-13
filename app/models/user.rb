@@ -5,5 +5,6 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   has_one :taste_profile, dependent: :destroy
+  has_many :coffee_logs, dependent: :destroy
   validates :name, presence: true, length: { maximum: 50 }
 end
