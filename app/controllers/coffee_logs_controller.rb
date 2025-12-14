@@ -3,7 +3,19 @@ class CoffeeLogsController < ApplicationController
   before_action :set_coffee_log, only: %i[show edit update destroy]
 
   def index
-    @coffee_logs = current_user.coffee_logs.order(drank_on: :desc, created_at: :desc)
+    scope = @coffee_logs = current_user.coffee_logs
+                               .includes(:user)
+                               .order(drank_on: :desc, created_at: :desc)
+
+    if params[:q].present?
+      q = "%#{params[:q]}%"
+      scope = scope.where(
+        "coffee_name ILIKE :q OR cafe_name ILIKE :q OR memo ILIKE :q",
+        q: q
+      )
+    end
+
+    @coffee_logs = scope.page(params[:page]).per(10)
   end
 
   def show; end

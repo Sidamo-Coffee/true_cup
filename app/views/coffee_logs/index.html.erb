@@ -4,7 +4,17 @@
     <%= link_to "新規記録", new_coffee_log_path,
                 class: "inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition" %>
   </div>
-
+  <%= form_with url: coffee_logs_path, method: :get, local: true, class: "flex gap-2 items-center" do |f| %>
+    <%= f.text_field :q,
+        value: params[:q],
+        placeholder: "商品名 / 店名 / メモで検索",
+        class: "flex-1 rounded border px-3 py-2" %>
+    <%= f.submit "検索",
+        class: "shrink-0 px-4 py-2 rounded bg-amber-700 text-white hover:bg-amber-800 transition" %>
+    <% if params[:q].present? %>
+      <%= link_to "クリア", coffee_logs_path, class: "shrink-0 px-4 py-2 rounded border hover:bg-gray-50 transition" %>
+    <% end %>
+  <% end %>
   <% if @coffee_logs.any? %>
     <div class="bg-white rounded-xl shadow-sm divide-y">
       <% @coffee_logs.each do |log| %>
@@ -16,23 +26,19 @@
                 ・<%= log.cafe_name %>
               <% end %>
             </p>
-
             <p class="font-semibold text-gray-900 truncate">
               <%= log.coffee_name.presence || "（商品名未入力）" %>
             </p>
-
             <p class="text-sm text-gray-700 mt-1">
               焙煎度：<%= log.roast_level %> /
               酸味：<%= ["弱い", "普通", "強い"][log.acidity] %> /
               苦み：<%= ["弱い", "普通", "強い"][log.bitterness] %> /
               好み度：<%= "★" * log.overall_rating %>
             </p>
-
             <% if log.memo.present? %>
               <p class="text-sm text-gray-600 mt-1 line-clamp-2"><%= log.memo %></p>
             <% end %>
           </div>
-
           <div class="shrink-0 flex items-center gap-2">
             <%= link_to "詳細", coffee_log_path(log), class: "px-3 py-2 rounded border text-sm hover:bg-gray-50" %>
             <%= link_to "編集", edit_coffee_log_path(log), class: "px-3 py-2 rounded border text-sm hover:bg-gray-50" %>
@@ -41,15 +47,28 @@
       <% end %>
     </div>
   <% else %>
-    <div class="bg-white rounded-xl shadow-sm p-6">
-      <p class="text-gray-600">まだ記録がありません。最初の1杯を記録してみましょう。</p>
-      <div class="mt-4">
-        <%= link_to "新規記録", new_coffee_log_path,
-                    class: "inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition" %>
+    <% if params[:q].present? %>
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <p class="text-gray-700 font-medium">該当する記録がありません</p>
+        <p class="text-sm text-gray-600 mt-2">
+          「<%= params[:q] %>」に一致する商品名 / 店名 / メモの記録は見つかりませんでした。
+        </p>
       </div>
+    <% else %>
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <p class="text-gray-600">まだ記録がありません。最初の1杯を記録してみましょう。</p>
+        <div class="mt-4">
+          <%= link_to "新規記録", new_coffee_log_path,
+                      class: "inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition" %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+  <% if @coffee_logs.total_pages > 1 %>
+    <div class="mt-6">
+      <%= paginate @coffee_logs %>
     </div>
   <% end %>
-
   <div>
     <%= link_to "マイページへ戻る", mypage_path, class: "text-sm text-gray-600 hover:underline" %>
   </div>
