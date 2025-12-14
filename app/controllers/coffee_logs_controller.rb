@@ -3,7 +3,11 @@ class CoffeeLogsController < ApplicationController
   before_action :set_coffee_log, only: %i[show edit update destroy]
 
   def index
-    @coffee_logs = current_user.coffee_logs.order(drank_on: :desc, created_at: :desc)
+    @coffee_logs = current_user.coffee_logs
+                               .includes(:user)
+                               .order(drank_on: :desc, created_at: :desc)
+                               .page(params[:page])
+                               .per(10)
   end
 
   def show; end

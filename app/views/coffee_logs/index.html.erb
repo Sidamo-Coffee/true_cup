@@ -50,6 +50,10 @@
     </div>
   <% end %>
 
+  <div class="mt-6">
+    <%= paginate @coffee_logs %>
+  </div>
+
   <div>
     <%= link_to "マイページへ戻る", mypage_path, class: "text-sm text-gray-600 hover:underline" %>
   </div>
