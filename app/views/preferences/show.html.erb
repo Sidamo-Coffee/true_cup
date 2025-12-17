@@ -1,16 +1,17 @@
 <div class="max-w-4xl mx-auto py-10 px-4 space-y-8">
   <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-semibold">好みの傾向（詳細）</h1>
+    <% page_title = (@scope == "liked") ? "好みの傾向" : "よく飲んでいる傾向" %>
+    <h1 class="text-2xl font-semibold"><%= page_title %></h1>
   </div>
 
-  <!-- タブ：全期間 / ★4以上 -->
+  <!-- タブ：全記録 / ★4以上 -->
   <div class="inline-flex rounded-full border bg-white p-1">
-    <%= link_to "全記録",
+    <%= link_to "全記録（よく飲む）",
                 preferences_path(scope: "all"),
                 class: "px-4 py-2 rounded-full text-sm font-semibold transition " +
                        (@scope == "all" ? "bg-amber-700 text-white" : "text-gray-700 hover:bg-gray-50") %>
 
-    <%= link_to "★4以上のみ",
+    <%= link_to "★4以上（好き）",
                 preferences_path(scope: "liked"),
                 class: "px-4 py-2 rounded-full text-sm font-semibold transition " +
                        (@scope == "liked" ? "bg-amber-700 text-white" : "text-gray-700 hover:bg-gray-50") %>
@@ -23,24 +24,32 @@
   <% else %>
     <!-- サマリー -->
     <div class="rounded-xl border bg-white p-6 shadow-sm space-y-2">
+      <% summary_prefix = (@scope == "liked") ? "好む傾向です" : "よく飲んでいます" %>
       <p class="text-lg font-semibold text-amber-800">
-        今のところ、あなたは「<%= @preference[:summary_roast] %>」が好みの傾向です。
+        あなたは「<%= @preference[:summary_roast] %>」のコーヒーを <%= summary_prefix %>。
       </p>
+
       <p class="text-sm text-gray-600">
-        <%= @preference[:reason] %>（対象：<%= @preference[:logs_count] %>件）
+        <%= @preference[:reason] %>
+      </p>
+
+      <p class="text-xs text-gray-500">
+        <%= @preference[:notice] %>
       </p>
     </div>
 
     <div class="grid md:grid-cols-2 gap-6">
       <!-- 焙煎度（円グラフ） -->
       <div class="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 class="text-lg font-semibold mb-3">焙煎度（好み加重）</h2>
+        <h2 class="text-lg font-semibold mb-1">焙煎度の割合（件数）</h2>
+        <p class="text-xs text-gray-500 mb-3"><%= @preference[:charts_reason] %></p>
         <%= pie_chart @preference[:roast_pie], donut: true, legend: "bottom", height: "260px" %>
       </div>
 
       <!-- 味（棒グラフ） -->
       <div class="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 class="text-lg font-semibold mb-3">味の傾向（0〜10）</h2>
+        <h2 class="text-lg font-semibold mb-1">味の傾向（0〜10）</h2>
+        <p class="text-xs text-gray-500 mb-3">選んだ記録の平均（件数ベース）です。</p>
         <%= column_chart @preference[:taste_bar], min: 0, max: 10, height: "260px" %>
       </div>
     </div>
@@ -59,15 +68,12 @@
                 割合：<%= item[:percent] %>% ・件数：<%= item[:count] %>件
               </p>
             </div>
-            <div class="text-sm text-gray-500">
-              好み度合計：<%= item[:weight] %>
-            </div>
           </div>
         <% end %>
       </div>
 
       <p class="text-xs text-gray-500 mt-4">
-        「割合」は、好み度（★）の合計に対する比率です（単純な件数比ではありません）。
+        「割合」は、選んだ記録の件数に対する比率です。
       </p>
     </div>
   <% end %>

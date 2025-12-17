@@ -76,42 +76,81 @@
                   class: "inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition" %>
     <% end %>
   </section>
-  <!-- 好みの傾向（簡易表示） -->
+  <!-- コーヒーの傾向（簡易表示） -->
   <section class="bg-white rounded-xl shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold">好みの傾向</h2>
-      <%= link_to "詳しく見る",
+      <h2 class="text-lg font-semibold">あなたのよく飲むコーヒーと好みの傾向</h2>
+      <%= link_to "詳細へ",
                   preferences_path,
                   class: "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition" %>
     </div>
 
-    <% if @preference[:available] %>
-      <p class="text-lg font-semibold text-amber-800 mb-1">
-        今のところ、あなたは「<%= @preference[:summary_roast] %>」が好みの傾向です。
-      </p>
-      <p class="text-xs text-gray-500 mb-4">
-        <%= @preference[:reason] %>
-      </p>
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="rounded-lg border p-4">
-          <p class="text-sm font-semibold mb-2">焙煎度（好み加重）</p>
-          <%= pie_chart @preference[:roast_pie], donut: true, height: "180px", legend: "bottom" %>
+    <div class="grid md:grid-cols-2 gap-4">
+      <!-- よく飲む（全記録） -->
+      <div class="rounded-lg border p-4 space-y-2">
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-semibold text-gray-900">よく飲む（全記録）</p>
+          <%= link_to "詳しく",
+                      preferences_path(scope: "all"),
+                      class: "text-xs text-gray-600 hover:underline" %>
         </div>
-        <div class="rounded-lg border p-4">
-          <p class="text-sm font-semibold mb-2">味の傾向（0〜10）</p>
-          <%= column_chart @preference[:taste_bar], min: 0, max: 10, height: "180px" %>
-        </div>
+
+        <% if @preference_all[:available] %>
+          <p class="text-base font-semibold text-amber-800">
+            「<%= @preference_all[:summary_roast] %>」をよく飲んでいます
+          </p>
+          <p class="text-xs text-gray-500">
+            対象：<%= @preference_all[:logs_count] %>件（件数ベース）
+          </p>
+
+          <div class="mt-2">
+            <%= pie_chart @preference_all[:roast_pie], donut: true, height: "160px", legend: "bottom" %>
+          </div>
+        <% else %>
+          <p class="text-sm text-gray-600">
+            まだ傾向を表示できる記録がありません。
+          </p>
+          <%= link_to "記録する",
+                      new_coffee_log_path,
+                      class: "inline-flex items-center justify-center px-3 py-2 rounded-full text-xs font-semibold bg-amber-700 text-white hover:bg-amber-800 transition" %>
+        <% end %>
       </div>
-    <% else %>
-      <p class="text-sm text-gray-600 mb-4">
-        まだ傾向を表示できる記録がありません。まずは数杯分記録してみましょう。
+
+      <!-- 好き（★4以上） -->
+      <div class="rounded-lg border p-4 space-y-2">
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-semibold text-gray-900">好き（★4以上）</p>
+          <%= link_to "詳しく",
+                      preferences_path(scope: "liked"),
+                      class: "text-xs text-gray-600 hover:underline" %>
+        </div>
+
+        <% if @preference_liked[:available] %>
+          <p class="text-base font-semibold text-amber-800">
+            「<%= @preference_liked[:summary_roast] %>」を好む傾向です
+          </p>
+          <p class="text-xs text-gray-500">
+            対象：<%= @preference_liked[:logs_count] %>件（件数ベース）
+          </p>
+          <div class="mt-2">
+            <%= pie_chart @preference_liked[:roast_pie], donut: true, height: "160px", legend: "bottom" %>
+          </div>
+        <% else %>
+          <p class="text-sm text-gray-600">
+            ★4以上の記録がまだありません。お気に入りに★4以上を付けると「好き」が見えてきます。
+          </p>
+        <% end %>
+      </div>
+    </div>
+
+    <%# 信頼度メッセージ（全期間ベースなので all 側の notice を使うのが自然） %>
+    <% if @preference_all[:available] %>
+      <p class="text-xs text-gray-500 mt-4">
+        <%= @preference_all[:notice] %>
       </p>
-      <%= link_to "最初の1杯を記録する",
-                  new_coffee_log_path,
-                  class: "inline-flex items-center justify-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition" %>
     <% end %>
   </section>
-  
+
   <!-- コーヒー記録エリア（MVP向けに枠だけ用意） -->
   <section class="bg-white rounded-xl shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
