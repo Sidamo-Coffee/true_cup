@@ -1,0 +1,74 @@
+<div class="max-w-4xl mx-auto py-10 px-4 space-y-8">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-semibold">好みの傾向（詳細）</h1>
+  </div>
+
+  <!-- タブ：全期間 / ★4以上 -->
+  <div class="inline-flex rounded-full border bg-white p-1">
+    <%= link_to "全記録",
+                preferences_path(scope: "all"),
+                class: "px-4 py-2 rounded-full text-sm font-semibold transition " +
+                       (@scope == "all" ? "bg-amber-700 text-white" : "text-gray-700 hover:bg-gray-50") %>
+
+    <%= link_to "★4以上のみ",
+                preferences_path(scope: "liked"),
+                class: "px-4 py-2 rounded-full text-sm font-semibold transition " +
+                       (@scope == "liked" ? "bg-amber-700 text-white" : "text-gray-700 hover:bg-gray-50") %>
+  </div>
+
+  <% if !@preference[:available] %>
+    <div class="rounded border p-4">
+      この条件では表示できる記録がありません。
+    </div>
+  <% else %>
+    <!-- サマリー -->
+    <div class="rounded-xl border bg-white p-6 shadow-sm space-y-2">
+      <p class="text-lg font-semibold text-amber-800">
+        今のところ、あなたは「<%= @preference[:summary_roast] %>」が好みの傾向です。
+      </p>
+      <p class="text-sm text-gray-600">
+        <%= @preference[:reason] %>（対象：<%= @preference[:logs_count] %>件）
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- 焙煎度（円グラフ） -->
+      <div class="rounded-xl border bg-white p-6 shadow-sm">
+        <h2 class="text-lg font-semibold mb-3">焙煎度（好み加重）</h2>
+        <%= pie_chart @preference[:roast_pie], donut: true, legend: "bottom", height: "260px" %>
+      </div>
+
+      <!-- 味（棒グラフ） -->
+      <div class="rounded-xl border bg-white p-6 shadow-sm">
+        <h2 class="text-lg font-semibold mb-3">味の傾向（0〜10）</h2>
+        <%= column_chart @preference[:taste_bar], min: 0, max: 10, height: "260px" %>
+      </div>
+    </div>
+
+    <!-- Top3ランキング -->
+    <div class="rounded-xl border bg-white p-6 shadow-sm">
+      <h2 class="text-lg font-semibold mb-4">焙煎度ランキング（Top3）</h2>
+
+      <div class="space-y-3">
+        <% @preference[:ranking].each_with_index do |item, idx| %>
+          <div class="flex items-center justify-between rounded-lg border p-4">
+            <div>
+              <p class="text-sm text-gray-500">#<%= idx + 1 %></p>
+              <p class="text-lg font-semibold text-gray-900"><%= item[:label] %></p>
+              <p class="text-sm text-gray-600">
+                割合：<%= item[:percent] %>% ・件数：<%= item[:count] %>件
+              </p>
+            </div>
+            <div class="text-sm text-gray-500">
+              好み度合計：<%= item[:weight] %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <p class="text-xs text-gray-500 mt-4">
+        「割合」は、好み度（★）の合計に対する比率です（単純な件数比ではありません）。
+      </p>
+    </div>
+  <% end %>
+</div>

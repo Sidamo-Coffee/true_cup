@@ -3,5 +3,6 @@ class MypageController < ApplicationController
     @user = current_user
     @taste_profile = current_user.taste_profile
     @recent_coffee_logs = current_user.coffee_logs.order(drank_on: :desc, created_at: :desc).limit(3)
+    @preference = PreferenceSummary.new(current_user).call
   end
 end
