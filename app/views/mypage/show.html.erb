@@ -78,8 +78,8 @@
   </section>
   <!-- コーヒーの傾向（簡易表示） -->
   <section class="bg-white rounded-xl shadow-sm p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold">あなたのよく飲むコーヒーと好みの傾向</h2>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+      <h2 class="text-lg font-semibold">よく飲むコーヒーと好みの傾向</h2>
       <%= link_to "詳細へ",
                   preferences_path,
                   class: "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition" %>
@@ -104,7 +104,7 @@
           </p>
 
           <div class="mt-2">
-            <%= pie_chart @preference_all[:roast_pie], donut: true, height: "160px", legend: "bottom" %>
+            <%= pie_chart @preference_all[:roast_pie], donut: true, height: "160px", legend: false %>
           </div>
         <% else %>
           <p class="text-sm text-gray-600">
@@ -133,7 +133,7 @@
             対象：<%= @preference_liked[:logs_count] %>件（件数ベース）
           </p>
           <div class="mt-2">
-            <%= pie_chart @preference_liked[:roast_pie], donut: true, height: "160px", legend: "bottom" %>
+            <%= pie_chart @preference_liked[:roast_pie], donut: true, height: "160px", legend: false %>
           </div>
         <% else %>
           <p class="text-sm text-gray-600">
