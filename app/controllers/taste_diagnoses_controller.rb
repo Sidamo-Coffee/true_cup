@@ -207,13 +207,13 @@ class TasteDiagnosesController < ApplicationController
     description     = ""
 
     # 浅煎り：酸味高め＆苦味控えめ
-    if acidity >= 8 && bitterness <= 3
+    if acidity >= 7 && bitterness <= 4
       preferred_roast = :light
       taste_type      = :light_like
       description = "フルーツのような酸味や爽やかさを楽しめる、浅煎りタイプです。明るく軽やかな味わいのコーヒーがお好きな傾向があります。"
 
     # 深煎り：苦味・コクがかなり高く、酸味は低め
-    elsif bitterness >= 8 && body >= 8 && acidity <= 3
+    elsif bitterness >= 8 && body >= 7 && acidity <= 3
       preferred_roast = :dark
       taste_type      = :dark_like
       description = "ビターな味わいとどっしりしたコクが際立つ、深煎りタイプです。濃厚で余韻の長いコーヒーを好む傾向があります。"
@@ -225,15 +225,14 @@ class TasteDiagnosesController < ApplicationController
       description = "香ばしさとしっかりしたコクを楽しめる、中深煎りタイプです。カフェオレやスイーツと合わせても負けない力強さが特徴です。"
 
     # 中煎り：全体が中庸〜やや寄り（“バランス”帯）
-    elsif acidity >= 7 || bitterness.between?(4, 6) && body.between?(4, 6) && acidity.between?(4, 6)
+    elsif bitterness.between?(6, 10) && body.between?(6, 10) && acidity.between?(6, 10)
       preferred_roast = :medium
       taste_type      = :medium_like
       description = "酸味・苦味・コクのバランスが取れた、中煎りタイプです。毎日飲んでも飲み疲れしにくい、ほどよいコーヒーがお好きな傾向があります。"
 
     # どこにも強く当てはまらない場合：近いものへ寄せる（MVPでは簡略化）
     else
-      # 迷ったら、苦味/コクが強い方を優先して中深〜深に寄せる
-      if bitterness >= 7 || body >= 7
+      if bitterness >= 7 && body >= 6
         preferred_roast = :medium_dark
         taste_type      = :medium_dark_like
         description = "香ばしさとコクを楽しめる、中深煎り寄りのタイプです。好みに合わせて深煎りも相性が良い可能性があります。"
