@@ -12,6 +12,7 @@ class RecommendedRoast
     # 1) ★4以上が十分あるなら最優先
     if @liked[:available] && @liked[:logs_count].to_i >= MIN_LIKED
       return build(
+        roast_key: @liked[:summary_roast_key],
         label: @liked[:summary_roast],
         reason: "★4以上の評価が最も多い",
         n: @liked[:logs_count],
@@ -22,6 +23,7 @@ class RecommendedRoast
     # 2) 全記録が十分あるなら次点
     if @all[:available] && @all[:logs_count].to_i >= MIN_ALL
       return build(
+        roast_key: @all[:summary_roast_key],
         label: @all[:summary_roast],
         reason: "全記録ベース",
         n: @all[:logs_count],
@@ -31,8 +33,10 @@ class RecommendedRoast
 
     # 3) 記録が少ないなら診断（仮説）に戻す
     if @taste_profile.present?
+      key = @taste_profile.preferred_roast.to_s
       label = PreferenceSummary::ROAST_LABELS.fetch(@taste_profile.preferred_roast.to_s, "不明")
       return build(
+        roast_key: key,
         label: label,
         reason: "味覚診断ベース（記録が少ないため）",
         n: 0,
@@ -45,9 +49,10 @@ class RecommendedRoast
 
   private
 
-  def build(label:, reason:, n:, message:)
+  def build(roast_key:, label:, reason:, n:, message:)
     {
       available: true,
+      roast_key: roast_key,
       label: label,
       reason: reason,
       n: n,

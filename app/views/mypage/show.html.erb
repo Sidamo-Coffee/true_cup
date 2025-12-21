@@ -55,7 +55,27 @@
         ※おすすめは記録したコーヒーの種類や評価の数によって更新されます。
         </p>
       <% end %>
+      <% if @roast_guide.present? %>
+        <div class="mt-4 space-y-3">
+          <div>
+            <p class="text-sm font-semibold text-gray-900">コーヒー選びの注目ワード</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <% @roast_guide[:words].each do |w| %>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                  <%= w %>
+                </span>
+              <% end %>
+            </div>
+          </div>
 
+          <div>
+            <p class="text-sm font-semibold text-gray-900">お店での伝え方</p>
+            <p class="mt-2 text-sm text-gray-700">
+              「<%= @roast_guide[:tell] %>」
+            </p>
+          </div>
+        </div>
+      <% end %>
       <div class="mt-4 flex flex-col sm:flex-row gap-3">
         <%= link_to "コーヒーを記録する",
                     new_coffee_log_path,
