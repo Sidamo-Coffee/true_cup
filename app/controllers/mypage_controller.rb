@@ -10,5 +10,9 @@ class MypageController < ApplicationController
       preference_all: @preference_all,
       taste_profile: @taste_profile
     ).call
+    @roast_guide =
+      if @recommended_roast&.dig(:available)
+        RoastGuide.call(@recommended_roast[:roast_key])
+      end
   end
 end

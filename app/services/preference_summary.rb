@@ -52,6 +52,7 @@ class PreferenceSummary
 
     top_key = pick_top_roast_key(roast_counts, logs)
     summary_label = roast_label(top_key)
+    summary_key   = CoffeeLog.roast_levels.key(top_key) || top_key.to_s
 
     # 味：件数ベースの平均（★で重み付けしない）
     acidity_avg    = logs.average(:acidity).to_f
@@ -72,6 +73,7 @@ class PreferenceSummary
       ranking: ranking,
 
       summary_roast: summary_label,
+      summary_roast_key: summary_key,
       reason: summary_reason(logs_count),
       charts_reason: scope_reason,
 
