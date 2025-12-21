@@ -30,8 +30,8 @@
     </p>
 
     <div class="mt-6">
-      <h2 class="text-sm font-semibold mb-2">味わいバランス（1〜5）</h2>
-      <dl class="grid grid-cols-2 gap-2 text-sm">
+      <h2 class="text-sm font-semibold mb-2">味わいバランス（0〜10）</h2>
+      <dl class="grid grid-cols-3 gap-2 text-sm">
         <div>
           <dt class="text-gray-500">苦味</dt>
           <dd class="font-medium"><%= @taste_profile.bitterness_score %></dd>
@@ -39,10 +39,6 @@
         <div>
           <dt class="text-gray-500">酸味</dt>
           <dd class="font-medium"><%= @taste_profile.acidity_score %></dd>
-        </div>
-        <div>
-          <dt class="text-gray-500">甘み</dt>
-          <dd class="font-medium"><%= @taste_profile.sweetness_score %></dd>
         </div>
         <div>
           <dt class="text-gray-500">コク</dt>

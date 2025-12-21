@@ -213,7 +213,7 @@ class TasteDiagnosesController < ApplicationController
       description = "フルーツのような酸味や爽やかさを楽しめる、浅煎りタイプです。明るく軽やかな味わいのコーヒーがお好きな傾向があります。"
 
     # 深煎り：苦味・コクがかなり高く、酸味は低め
-    elsif bitterness >= 8 && body >= 8 && acidity <= 3
+    elsif bitterness >= 8 && body >= 7 && acidity <= 3
       preferred_roast = :dark
       taste_type      = :dark_like
       description = "ビターな味わいとどっしりしたコクが際立つ、深煎りタイプです。濃厚で余韻の長いコーヒーを好む傾向があります。"
@@ -225,7 +225,7 @@ class TasteDiagnosesController < ApplicationController
       description = "香ばしさとしっかりしたコクを楽しめる、中深煎りタイプです。カフェオレやスイーツと合わせても負けない力強さが特徴です。"
 
     # 中煎り：全体が中庸〜やや寄り（“バランス”帯）
-    elsif acidity >= 7 || bitterness.between?(4, 6) && body.between?(4, 6) && acidity.between?(4, 6)
+    elsif (bitterness.between?(4, 6) && body.between?(4, 6) && acidity.between?(4, 6))
       preferred_roast = :medium
       taste_type      = :medium_like
       description = "酸味・苦味・コクのバランスが取れた、中煎りタイプです。毎日飲んでも飲み疲れしにくい、ほどよいコーヒーがお好きな傾向があります。"
