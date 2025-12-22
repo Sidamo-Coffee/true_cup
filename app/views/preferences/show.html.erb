@@ -40,17 +40,17 @@
 
     <div class="grid md:grid-cols-2 gap-6">
       <!-- 焙煎度（円グラフ） -->
-      <div class="rounded-xl border bg-white p-6 shadow-sm">
+      <div class="rounded-xl border bg-white p-6 shadow-sm wrapper w-full overflow-hidden">
         <h2 class="text-lg font-semibold mb-1">焙煎度の割合（件数）</h2>
         <p class="text-xs text-gray-500 mb-3"><%= @preference[:charts_reason] %></p>
-        <%= pie_chart @preference[:roast_pie], donut: true, legend: "bottom", height: "260px" %>
+        <%= pie_chart @preference[:roast_pie], donut: true, legend: "bottom", height: "260px", width: "100%", library: { responsive: true, maintainAspectRatio: false } %>
       </div>
 
       <!-- 味（棒グラフ） -->
-      <div class="rounded-xl border bg-white p-6 shadow-sm">
+      <div class="rounded-xl border bg-white p-6 shadow-sm wrapper w-full overflow-hidden">
         <h2 class="text-lg font-semibold mb-1">味の傾向（0〜10）</h2>
         <p class="text-xs text-gray-500 mb-3">選んだ記録の平均（件数ベース）です。</p>
-        <%= column_chart @preference[:taste_bar], min: 0, max: 10, height: "260px" %>
+        <%= column_chart @preference[:taste_bar], min: 0, max: 10, height: "260px", width: "100%", library: { responsive: true, maintainAspectRatio: false } %>
       </div>
     </div>
 

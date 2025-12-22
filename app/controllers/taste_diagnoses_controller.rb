@@ -4,7 +4,7 @@ class TasteDiagnosesController < ApplicationController
   TASTE_QUESTIONS = [
     {
       key: :chocolate,
-      title: "チョコレートを買うとき、どちらを選ぶ事が多いですか？",
+      title: "チョコレートを買うとき、最も選ぶのが多いのは？",
       options: [
         { label: "甘めのミルクチョコレート", value: "milk_chocolate" },
         { label: "ビターなダークチョコレート", value: "dark_chocolate"  },
@@ -13,7 +13,7 @@ class TasteDiagnosesController < ApplicationController
     },
     {
       key: :cake,
-      title: "次の中で、コーヒーと合わせて食べたいと思うケーキはどれですか？",
+      title: "次の中で、コーヒーと合わせて食べたいと思うケーキは？",
       options: [
         { label: "フルーツタルト", value: "fruit_tart" },
         { label: "モンブラン", value: "mont_blanc"  },
@@ -22,7 +22,7 @@ class TasteDiagnosesController < ApplicationController
     },
     {
       key: :dressing,
-      title: "サラダにドレッシングをかけるなら、次のうちどれが最も多いですか？",
+      title: "以下のサラダのドレッシングで最も好きなのは？",
       options: [
         { label: "フレンチドレッシング", value: "french_dressing" },
         { label: "和風しょうゆドレッシング",     value: "japanese_dressing"      },
@@ -31,7 +31,7 @@ class TasteDiagnosesController < ApplicationController
     },
     {
       key: :amount,
-      title: "コーヒーを飲むとき、以下のどちらの飲み方の方が好みですか？",
+      title: "コーヒーを飲むときは、どちらの飲み方の方が好み？",
       options: [
         { label: "あっさりめの濃さ を たっぷりめの量 で飲みたい", value: "much" },
         { label: "どっしりめの濃さ を 控えめの量 で飲みたい",     value: "little"      },
@@ -40,11 +40,11 @@ class TasteDiagnosesController < ApplicationController
     },
     {
       key: :dislike,
-      title: "以下のうち、食べるのをイメージしてより「苦手だ」と感じるのはどちらですか？",
+      title: "以下をイメージして、より「苦手だ」と感じるのは？",
       options: [
         { label: "酸っぱいレモン", value: "too_sour" },
         { label: "カカオ95%以上のとても苦いチョコレート",     value: "too_bitter"      },
-        { label: "わからない、もしくは どちらも苦手ではない", value: "both_like"          }
+        { label: "わからない / どちらも苦手ではない", value: "both_like"          }
       ]
     }
   ].freeze

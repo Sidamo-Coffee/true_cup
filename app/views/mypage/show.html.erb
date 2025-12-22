@@ -33,7 +33,7 @@
   <!-- おすすめ焙煎度（結論は1つだけ） -->
   <section class="bg-white rounded-xl shadow-sm p-6">
     <div class="flex items-center justify-between mb-2">
-      <h2 class="text-lg font-semibold">あなたにおすすめの焙煎度</h2>
+      <h2 class="text-lg font-semibold">おすすめ</h2>
       <% if @recommended_roast&.dig(:available) %>
         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
           <%= @recommended_roast[:reason] %>
@@ -104,21 +104,18 @@
   
   <!-- コーヒーの傾向（簡易表示） -->
   <section class="bg-white rounded-xl shadow-sm p-6">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-      <h2 class="text-lg font-semibold">記録からみた傾向（参考）</h2>
+    <div class="flex items-center sm:justify-between gap-3 mb-4">
+      <h2 class="text-lg font-semibold min-w-0">記録からみた傾向</h2>
       <%= link_to "詳細へ",
                   preferences_path,
-                  class: "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition" %>
+                  class: "shrink-0 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition" %>
     </div>
   
     <div class="grid md:grid-cols-2 gap-4">
       <!-- （全記録） -->
-      <div class="rounded-lg border p-4 space-y-2">
-        <div class="flex items-center justify-between">
-          <p class="text-sm font-semibold text-gray-900">全ての記録</p>
-          <%= link_to "詳しく",
-                      preferences_path(scope: "all"),
-                      class: "text-xs text-gray-600 hover:underline" %>
+      <div class="rounded-lg border p-4 space-y-2 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-sm font-semibold text-gray-900 min-w-0">全ての記録</p>
         </div>
 
         <% if @preference_all[:available] %>
@@ -129,11 +126,16 @@
             対象：<%= @preference_all[:logs_count] %>件（件数ベース）
           </p>
 
-          <div class="mt-2">
-            <%= pie_chart @preference_all[:roast_pie], donut: true, height: "160px", legend: false %>
+          <div class="mt-2 w-full overflow-hidden min-w-0">
+            <%= pie_chart @preference_all[:roast_pie], 
+                  donut: true, 
+                  height: "180px", 
+                  width: "100%", 
+                  legend: false, 
+                  library: { responsive: true, maintainAspectRatio: false } %>
           </div>
         <% else %>
-          <p class="text-sm text-gray-600">
+          <p class="text-sm text-gray-600 leading-relaxed">
             まだ傾向を表示できる記録がありません。
           </p>
           <%= link_to "記録する",
@@ -143,12 +145,9 @@
       </div>
 
       <!-- 好き（★4以上） -->
-      <div class="rounded-lg border p-4 space-y-2">
-        <div class="flex items-center justify-between">
-          <p class="text-sm font-semibold text-gray-900">好評価(★4以上)</p>
-          <%= link_to "詳しく",
-                      preferences_path(scope: "liked"),
-                      class: "text-xs text-gray-600 hover:underline" %>
+      <div class="rounded-lg border p-4 space-y-2 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-sm font-semibold text-gray-900 min-w-0">好評価(★4以上)</p>
         </div>
 
         <% if @preference_liked[:available] %>
@@ -158,29 +157,34 @@
           <p class="text-xs text-gray-500">
             対象：<%= @preference_liked[:logs_count] %>件（件数ベース）
           </p>
-          <div class="mt-2">
-            <%= pie_chart @preference_liked[:roast_pie], donut: true, height: "160px", legend: false %>
+          <div class="mt-2 w-full overflow-hidden min-w-0">
+            <%= pie_chart @preference_liked[:roast_pie], 
+            donut: true, 
+            height: "160px", 
+            width: "100%", 
+            legend: false,
+            library: { responsive: true, maintainAspectRatio: false } %>
           </div>
         <% else %>
-          <p class="text-sm text-gray-600">
+          <p class="text-sm text-gray-600 leading-relaxed">
             ★4以上の記録がまだありません。お気に入りに★4以上を付けると「好き」が見えてきます。
           </p>
         <% end %>
       </div>
     </div>
 
-    <%# 信頼度メッセージ（全期間ベースなので all 側の notice を使うのが自然） %>
+    <%# 補足メッセージ %>
     <% if @preference_all[:available] %>
-      <p class="text-xs text-gray-500 mt-4">
+      <p class="text-xs text-gray-500 mt-4 leading-relaxed">
         <%= @preference_all[:notice] %>
       </p>
     <% end %>
   </section>
 
-  <!-- コーヒー記録エリア（MVP向けに枠だけ用意） -->
+  <!-- コーヒー記録エリア -->
   <section class="bg-white rounded-xl shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold">コーヒー記録</h2>
+      <h2 class="text-lg font-semibold">最近の記録</h2>
       <div class="flex gap-2">
         <%= link_to "記録一覧",
                     coffee_logs_path,
@@ -212,19 +216,21 @@
                   <%= log.coffee_name.presence || "（商品名未入力）" %>
                 </p>
 
-                <p class="text-sm text-gray-700 mt-2">
-                  酸味：<%= ["弱い", "普通", "強い"][log.acidity] %>
-                  ・苦み：<%= ["弱い", "普通", "強い"][log.bitterness] %>
-                  ・好み度：<%= "★" * log.overall_rating %>
-                </p>
+                <div class="mt-2 flex flex-wrap gap-2 text-xs">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+                    酸味：<%= ["弱い", "普通", "強い"][log.acidity] %>
+                  </span>
+                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+                    苦み：<%= ["弱い", "普通", "強い"][log.bitterness] %>
+                  </span>
+                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+                    好み度：<%= "★" * log.overall_rating %>
+                  </span>
+                </div>
 
                 <% if log.memo.present? %>
                   <p class="text-sm text-gray-600 mt-2 line-clamp-2"><%= log.memo %></p>
                 <% end %>
-              </div>
-
-              <div class="shrink-0 text-xs text-gray-500">
-                詳細 →
               </div>
             </div>
           <% end %>
