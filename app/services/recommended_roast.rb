@@ -14,7 +14,7 @@ class RecommendedRoast
       return build(
         roast_key: @liked[:summary_roast_key],
         label: @liked[:summary_roast],
-        reason: "★4以上の評価が最も多い",
+        reason: "★4以上が最も多い",
         n: @liked[:logs_count],
         message: "最近の「好き」から見ると、この焙煎度が合いやすいです。"
       )
@@ -38,7 +38,7 @@ class RecommendedRoast
       return build(
         roast_key: key,
         label: label,
-        reason: "味覚診断ベース（記録が少ないため）",
+        reason: "味覚診断ベース",
         n: 0,
         message: "まずは診断結果の焙煎度を軸に選んで、記録を増やしてみましょう。"
       )
