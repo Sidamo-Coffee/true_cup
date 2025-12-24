@@ -1,0 +1,21 @@
+ja:
+  activerecord:
+    attributes:
+      coffee_log:
+        place:
+          cafe: "お店"
+          home: "自宅"
+          other: "その他"
+        roast_level:
+          unknown: "不明"
+          light: "浅煎り"
+          medium: "中煎り"
+          medium_dark: "中深煎り"
+          dark: "深煎り"
+        brew_method:
+          unknown: "不明"
+          pour_over: "ペーパードリップ"
+          nel: "ネルドリップ"
+          espresso: "エスプレッソ"
+          french_press: "フレンチプレス"
+          other: "その他"

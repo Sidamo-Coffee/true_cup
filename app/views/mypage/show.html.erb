@@ -11,21 +11,11 @@
   </section>
 
   <% if @taste_profile.present? %>
-    <% taste_label =
-      case @taste_profile.preferred_roast.to_s
-      when "light"       then "浅煎りタイプ"
-      when "medium"      then "中煎りタイプ"
-      when "medium_dark" then "中深煎りタイプ"
-      when "dark"        then "深煎りタイプ"
-      else "診断タイプ"
-      end
-    %>
-
     <%= link_to taste_profile_path,
                 class: "inline-flex items-center gap-1 mt-3 text-xs font-semibold
                         px-3 py-1.5 rounded-full border border-gray-300
                         text-gray-700 hover:bg-gray-50 transition w-fit" do %>
-      味覚診断結果：<%= taste_label %>
+      味覚診断結果：<%= @taste_profile.preferred_roast_label %>
       <span class="text-gray-400">→</span>
     <% end %>
   <% end %>
@@ -205,8 +195,8 @@
             <div class="flex items-start justify-between gap-4">
               <div class="min-w-0">
                 <p class="text-xs text-gray-500">
-                  <%= log.drank_on %>
-                  ・<%= log.place_cafe? ? "お店" : (log.place_home? ? "自宅" : "その他") %>
+                  <%= l log.drank_on, format: :long %>
+                  ・<%= log.place_label %>
                   <% if log.place_cafe? && log.cafe_name.present? %>
                     （<%= log.cafe_name %>）
                   <% end %>

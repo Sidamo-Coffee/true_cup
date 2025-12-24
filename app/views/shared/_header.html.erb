@@ -12,7 +12,7 @@
         <% end %>
       <% end %>
       <span class="hidden sm:inline text-[11px] text-stone-500">
-        コーヒーの「好き」が見つかる味覚診断アプリ
+        <%= t(".tagline") %>
       </span>
     </div>
 
@@ -20,26 +20,26 @@
     <nav class="flex items-center gap-2 md:gap-3 text-xs md:text-sm">
       <% if user_signed_in? %>
       <!-- ログイン後ナビ -->
-        <%= link_to "コーヒーを記録",
+        <%= link_to t(".nav.new_log"),
             new_coffee_log_path,
             class: "inline-flex items-center justify-center rounded-full
                     px-3 py-1.5 md:px-4 md:py-2 font-semibold
                     text-amber-50 bg-amber-700 hover:bg-amber-800 transition" %>
         <!-- md以上ではフルナビ、モバイルはメニューに格納 -->
         <div class="hidden md:flex items-center gap-3">
-          <%= link_to "記録一覧",
+          <%= link_to t(".nav.logs"),
                 coffee_logs_path,
                 class: "text-stone-700 hover:text-stone-900 px-2 py-1" %>
 
-          <%= link_to "あなたの傾向",
+          <%= link_to t(".nav.preferences"),
                 preferences_path,
                 class: "text-stone-700 hover:text-stone-900 px-2 py-1" %>
 
-          <%= link_to "マイページ",
+          <%= link_to t(".nav.mypage"),
                 mypage_path,
                 class: "text-stone-700 hover:text-stone-900 px-2 py-1" %>
 
-          <%= button_to "ログアウト",
+          <%= button_to t(".nav.logout"),
                 destroy_user_session_path,
                 method: :delete,
                 form: { data: { turbo: false } },
@@ -48,25 +48,25 @@
         <!-- モバイル用メニュー（JS不要） -->
         <details class="md:hidden relative">
           <summary class="list-none inline-flex items-center justify-center rounded-full px-3 py-1.5 font-semibold border border-stone-300 text-stone-700 hover:bg-stone-50 transition cursor-pointer">
-            メニュー
+            <%= t(".menu") %>
           </summary>
 
           <div class="absolute right-0 mt-2 w-44 rounded-xl border bg-white shadow-lg p-2 z-50">
-            <%= link_to "マイページ",
+            <%= link_to t(".nav.mypage"),
                   mypage_path,
                   class: "block px-3 py-2 rounded-lg text-sm text-stone-700 hover:bg-stone-50" %>
 
-            <%= link_to "記録一覧",
+            <%= link_to t(".nav.logs"),
                   coffee_logs_path,
                   class: "block px-3 py-2 rounded-lg text-sm text-stone-700 hover:bg-stone-50" %>
 
-            <%= link_to "あなたの傾向",
+            <%= link_to t(".nav.preferences"),
                   preferences_path,
                   class: "block px-3 py-2 rounded-lg text-sm text-stone-700 hover:bg-stone-50" %>
 
             <div class="my-1 border-t"></div>
 
-            <%= button_to "ログアウト",
+            <%= button_to t(".nav.logout"),
                   destroy_user_session_path,
                   method: :delete,
                   form: { data: { turbo: false } },
@@ -75,15 +75,15 @@
         </details>
       <% else %>
         <!-- ログイン前ナビ -->
-        <%= link_to "このアプリについて",
+        <%= link_to t(".nav.about"),
               root_path,
               class: "hidden sm:inline text-stone-700 hover:text-stone-900" %>
 
-        <%= link_to "ログイン",
+        <%= link_to t(".nav.login"),
               new_user_session_path,
               class: "text-stone-700 hover:text-stone-900" %>
 
-        <%= link_to "無料で始める",
+        <%= link_to t(".nav.signup"),
               new_user_registration_path,
               class: "inline-flex items-center justify-center rounded-full 
                        px-3 py-1.5 md:px-4 md:py-2 font-semibold 

@@ -2,7 +2,7 @@
   <div class="flex items-start justify-between gap-4">
     <div>
       <h1 class="text-2xl font-semibold">コーヒー記録（詳細）</h1>
-      <p class="text-sm text-gray-500 mt-1"><%= @coffee_log.drank_on %></p>
+      <p class="text-sm text-gray-500 mt-1"><%= l @coffee_log.drank_on, format: :long %></p>
     </div>
 
     <div class="flex gap-2">

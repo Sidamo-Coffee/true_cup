@@ -1,0 +1,54 @@
+ja:
+  shared:
+    header:
+      tagline: "コーヒーの「好き」が見つかるアプリ"
+      menu: "メニュー"
+      nav:
+        new_log: "コーヒーを記録"
+        logs: "記録一覧"
+        preferences: "あなたの傾向"
+        mypage: "マイページ"
+        logout: "ログアウト"
+        about: "このアプリについて"
+        login: "ログイン"
+        signup: "無料で始める"
+  taste_diagnoses:
+    new:
+      title: "味覚診断"
+      heading: "コーヒー味覚診断"
+      lead_html: "いくつかの質問に直感でお答えください。<br>あなたの「好きなコーヒーの傾向」を診断します。"
+      question_title: "質問 %{number}：%{title}"
+      submit: "診断結果を見る"
+
+  taste_diagnosis:
+    questions:
+      chocolate:
+        title: "チョコレートを買うとき、どちらを選ぶ事が多いですか？"
+        options:
+          milk_chocolate: "甘めのミルクチョコレート"
+          dark_chocolate: "ビターなダークチョコレート"
+          not_chocolate: "チョコはあまり食べない"
+      cake:
+        title: "次の中で、コーヒーと合わせて食べたいと思うケーキはどれですか？"
+        options:
+          fruit_tart: "フルーツタルト"
+          mont_blanc: "モンブラン"
+          gateau_chocolat: "ガトーショコラ"
+      dressing:
+        title: "サラダにドレッシングをかけるなら、次のうちどれが最も多いですか？"
+        options:
+          french_dressing: "フレンチドレッシング"
+          japanese_dressing: "和風しょうゆドレッシング"
+          sesame_dressing: "ごまドレッシング"
+      amount:
+        title: "コーヒーを飲むとき、以下のどちらの飲み方の方が好みですか？"
+        options:
+          much: "あっさりめの濃さ を たっぷりめの量 で飲みたい"
+          little: "どっしりめの濃さ を 控えめの量 で飲みたい"
+          amount_neither: "わからない"
+      dislike:
+        title: "以下のうち、食べるのをイメージしてより「苦手だ」と感じるのはどちらですか？"
+        options:
+          too_sour: "酸っぱいレモン"
+          too_bitter: "カカオ95%以上のとても苦いチョコレート"
+          both_like: "わからない、もしくは どちらも苦手ではない"

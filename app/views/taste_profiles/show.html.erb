@@ -40,7 +40,7 @@
   <div class="bg-white rounded-xl shadow-sm p-6 space-y-4">
     <div class="flex items-center justify-between gap-3">
       <p class="text-sm text-gray-600">
-        診断日：<%= l @taste_profile.diagnosed_at, format: :long %>
+        診断日：<%= l @taste_profile.diagnosed_at.to_date, format: :long %>
       </p>
 
       <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
