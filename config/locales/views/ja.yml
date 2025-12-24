@@ -52,3 +52,36 @@ ja:
           too_sour: "酸っぱいレモン"
           too_bitter: "カカオ95%以上のとても苦いチョコレート"
           both_like: "わからない、もしくは どちらも苦手ではない"
+  taste_profiles:
+    show:
+      title: "味覚診断結果"
+      heading: "あなたのコーヒー味覚診断結果"
+      diagnosed_on: "診断日：%{date}"
+
+      recommend: "まずは「%{roast}」のコーヒーから試すのがおすすめです。"
+      what_is: "「%{roast}」って何？"
+
+      roast_label:
+        light: "浅煎り"
+        medium: "中煎り"
+        medium_dark: "中深煎り"
+        dark: "深煎り"
+        default: "コーヒータイプ"
+
+      tagline:
+        light: "爽やかフルーティ派"
+        medium: "バランス派"
+        medium_dark: "香ばしコク派"
+        dark: "どっしりビター派"
+        default: "あなたのタイプ"
+
+      roast_hint:
+        light: "爽やかな酸味と、フルーティーな香りが際立つ焙煎度(焼き加減)。"
+        medium: "酸味・苦味・コクをバランスよく味わえる焙煎度(焼き加減)。"
+        medium_dark: "柔らかな苦味と甘いコクが調和した、酸味控えめで落ち着きのある焙煎度(焼き加減)。"
+        dark: "力強い苦味と重厚なコクと甘み、芳醇な香りがしっかり感じられる焙煎度(焼き加減)。"
+        default: "焙煎度によって、味の傾向が変わります。"
+
+      actions:
+        retry: "もう一度診断する"
+        back: "マイページへ戻る"
