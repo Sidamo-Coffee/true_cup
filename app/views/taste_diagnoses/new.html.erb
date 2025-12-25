@@ -16,7 +16,7 @@
 
         <section class="bg-white rounded-xl shadow-sm p-6">
           <h2 class="text-base font-semibold mb-4">
-            <%= t(".question_title", number: index + 1, title: t("taste_diagnosis.questions.#{q_key}.title")) %>
+            <%= t(".question_title", number: index + 1, title: t("taste_diagnoses.questions.#{q_key}.title")) %>
           </h2>
 
           <div class="space-y-3">
@@ -27,7 +27,7 @@
                                      false,
                                      class: "h-4 w-4 border-gray-300" %>
                 <span class="text-sm text-gray-800">
-                  <%= t("taste_diagnosis.questions.#{q_key}.options.#{opt}") %>
+                  <%= t("taste_diagnoses.questions.#{q_key}.options.#{opt}") %>
                 </span>
               </label>
             <% end %>

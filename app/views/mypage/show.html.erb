@@ -208,10 +208,10 @@
 
                 <div class="mt-2 flex flex-wrap gap-2 text-xs">
                   <span class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700">
-                     <%= t(".chips.acidity") %>：<%= t(".levels.#{log.acidity}") %>
+                     <%= t(".chips.acidity") %>：<%= t("common.taste_levels.strength")[log.acidity] %>
                   </span>
                   <span class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700">
-                    <%= t(".chips.bitterness") %>：<%= t(".levels.#{log.bitterness}") %>
+                    <%= t(".chips.bitterness") %>：<%= t("common.taste_levels.strength")[log.bitterness] %>
                   </span>
                   <span class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700">
                     <%= t(".chips.rating") %>：<%= "★" * log.overall_rating %>

@@ -1,7 +1,7 @@
 ja:
   date:
     formats:
-      default: "%Y.%m.%d"
+      default: "%Y/%m/%d"
       long: "%Y/%m/%d"
       short: "%m/%d"
   time:
@@ -10,3 +10,9 @@ ja:
       long: "%Y/%m/%d(%a) %H:%M:%S %z"
       short: "%y/%m/%d %H:%M"
       only_time: "%H:%M"
+  common:
+    taste_levels:
+      strength:
+        - "弱い"
+        - "普通"
+        - "強い"
