@@ -16,6 +16,24 @@ ja:
       terms: "利用規約"
       privacy: "プライバシーポリシー"
       copyright: "© %{year} TrueCup All Rights Reserved."
+  flash:
+    coffee_logs:
+      create:
+        notice: "記録を登録しました。"
+        alert: "記録を登録できませんでした。"
+      update:
+        notice: "記録を更新しました。"
+        alert: "記録を更新できませんでした。"
+      destroy:
+        notice: "記録を削除しました。"
+    taste_diagnoses:
+      create:
+        notice: "味覚診断が完了しました。"
+        alert: "診断の保存に失敗しました。もう一度お試しください。"
+        answers_nil: "全ての質問に回答してください。"
+    taste_profiles:
+      show:
+        alert: "まず味覚診断を受けてください。"
   taste_diagnoses:
     new:
       title: "味覚診断"

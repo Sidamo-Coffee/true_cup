@@ -1,4 +1,6 @@
 ja:
+  app:
+    name: "TrueCup"
   date:
     formats:
       default: "%Y/%m/%d"

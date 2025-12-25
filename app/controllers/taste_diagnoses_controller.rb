@@ -19,7 +19,7 @@ class TasteDiagnosesController < ApplicationController
     # 回答の取得＋未回答チェックをまとめたメソッド
     answers = build_answers_from_params
     if answers.nil?
-      flash.now[:alert] = "全ての質問に回答してください。"
+      flash.now[:alert] = t("flash.taste_diagnoses.create.answers_nil")
       return render :new, status: :unprocessable_entity
     end
     # ---- スコア計算 ----
@@ -49,9 +49,9 @@ class TasteDiagnosesController < ApplicationController
     )
 
     if taste_profile.save
-      redirect_to taste_profile_path, notice: "味覚診断が完了しました。"
+      redirect_to taste_profile_path, notice: t("flash.taste_diagnoses.create.notice")
     else
-      flash.now[:alert] = "診断の保存に失敗しました。もう一度お試しください。"
+      flash.now[:alert] = t("flash.taste_diagnoses.create.alert")
       render :new, status: :unprocessable_entity
     end
   end
