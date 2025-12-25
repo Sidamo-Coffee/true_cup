@@ -12,6 +12,10 @@ ja:
         about: "このアプリについて"
         login: "ログイン"
         signup: "新規登録"
+    footer:
+      terms: "利用規約"
+      privacy: "プライバシーポリシー"
+      copyright: "© %{year} TrueCup All Rights Reserved."
   taste_diagnoses:
     new:
       title: "味覚診断"
