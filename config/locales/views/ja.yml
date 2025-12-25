@@ -192,3 +192,32 @@ ja:
         medium: "バランス良い（中煎り）"
         medium_dark: "香ばしい・コク（中深煎り）"
         dark: "苦め・どっしり（深煎り）"
+  preferences:
+    show:
+      title:
+        all: "よく飲んでいる傾向"
+        liked: "好みの傾向"
+
+      tabs:
+        all: "全記録（よく飲む）"
+        liked: "★4以上（好き）"
+
+      empty: "この条件では表示できる記録がありません。"
+
+      summary:
+        text: "あなたは「%{roast}」のコーヒーを %{suffix}。"
+        suffix:
+          all: "よく飲んでいます"
+          liked: "好む傾向です"
+
+      charts:
+        roast:
+          title: "焙煎度の割合（件数）"
+        taste:
+          title: "味の傾向（0〜10）"
+          note: "選んだ記録の平均（件数ベース）です。"
+
+      ranking:
+        title: "焙煎度ランキング（Top3）"
+        row: "割合：%{percent}% ・件数：%{count}件"
+        note: "「割合」は、選んだ記録の件数に対する比率です。"
