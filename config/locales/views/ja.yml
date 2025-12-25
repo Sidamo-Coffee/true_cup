@@ -85,3 +85,53 @@ ja:
       actions:
         retry: "もう一度診断する"
         back: "マイページへ戻る"
+  mypage:
+    show:
+      greeting: "%{name}さん、こんにちは！"
+      intro: "飲んだコーヒーを記録してどんどん好みを育てていきましょう。"
+
+      taste_link: "味覚診断結果：%{label}"
+
+      sections:
+        recommendation: "おすすめ"
+        insights: "記録からみた傾向"
+        recent_logs: "最近の記録"
+
+      actions:
+        to_detail: "詳細へ"
+        new_log: "新規記録"
+        logs_index: "記録一覧"
+        more: "もっと見る"
+        record: "コーヒーを記録する"
+        insights_detail: "傾向の詳細を見る"
+        first_log: "最初の1杯を記録する"
+        start_diagnosis: "味覚診断をはじめる"
+
+      recommendation:
+        notice_update: "※おすすめは記録したコーヒーの種類や評価の数によって更新されます。"
+        words_title: "コーヒー選びの注目ワード"
+        tell_title: "お店での伝え方"
+        no_recommendation: "診断または記録が増えると、おすすめを表示できます。"
+        total_count: "（全%{count}件）"
+
+      insights:
+        all_title: "全ての記録"
+        liked_title: "好評価(★4以上)"
+        summary_roast: "「%{roast}」が多い傾向です"
+        target_count: "対象：%{count}件（件数ベース）"
+        empty_all: "まだ傾向を表示できる記録がありません。"
+        empty_liked: "★4以上の記録がまだありません。お気に入りに★4以上を付けると「好き」が見えてきます。"
+
+      recent_logs:
+        empty: "まだコーヒー記録がありません。飲んだコーヒーの印象を残して、好みの傾向をつかみましょう。"
+        coffee_name_blank: "（商品名未入力）"
+
+      chips:
+        acidity: "酸味"
+        bitterness: "苦み"
+        rating: "好み度"
+
+      levels:
+        "0": "弱い"
+        "1": "普通"
+        "2": "強い"
