@@ -30,8 +30,9 @@ class CoffeeLogsController < ApplicationController
   def create
     @coffee_log = current_user.coffee_logs.build(coffee_log_params)
     if @coffee_log.save
-      redirect_to @coffee_log, notice: "コーヒー記録を登録しました"
+      redirect_to @coffee_log, notice: t("flash.coffee_logs.create.notice")
     else
+      flash.now[:alert] = t("flash.coffee_logs.create.alert")
       render :new, status: :unprocessable_entity
     end
   end
@@ -40,15 +41,16 @@ class CoffeeLogsController < ApplicationController
 
   def update
     if @coffee_log.update(coffee_log_params)
-      redirect_to @coffee_log, notice: "コーヒー記録を更新しました"
+      redirect_to @coffee_log, notice: t("flash.coffee_logs.update.notice")
     else
+      flash.now[:alert] = t("flash.coffee_logs.update.alert")
       render :edit, status: :unprocessable_entity
     end
   end
 
   def destroy
     @coffee_log.destroy!
-    redirect_to coffee_logs_path, notice: "コーヒー記録を削除しました", status: :see_other
+    redirect_to coffee_logs_path, notice: t("flash.coffee_logs.destroy"), status: :see_other
   end
 
   private

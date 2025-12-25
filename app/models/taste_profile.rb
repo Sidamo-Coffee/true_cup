@@ -20,4 +20,8 @@ class TasteProfile < ApplicationRecord
             presence: true,
             numericality: { only_integer: true, in: 0..10 }
   validates :diagnosed_at, :taste_type, :preferred_roast, presence: true
+
+  def preferred_roast_label
+    I18n.t("activerecord.enums.coffee_log.roast_level.#{preferred_roast}")
+  end
 end

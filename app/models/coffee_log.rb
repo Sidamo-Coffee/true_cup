@@ -11,4 +11,16 @@ class CoffeeLog < ApplicationRecord
   validates :memo, length: { maximum: 1000 }, allow_blank: true
   validates :bitterness, :acidity, numericality: { only_integer: true, in: 0..2 }
   validates :overall_rating, numericality: { only_integer: true, in: 1..5 }
+
+  def place_label
+    I18n.t("activerecord.enums.coffee_log.place.#{place}")
+  end
+
+  def roast_level_label
+    I18n.t("activerecord.enums.coffee_log.roast_level.#{roast_level}")
+  end
+
+  def brew_method_label
+    I18n.t("activerecord.enums.coffee_log.brew_method.#{brew_method}")
+  end
 end

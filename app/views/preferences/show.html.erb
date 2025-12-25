@@ -1,17 +1,17 @@
 <div class="max-w-4xl mx-auto py-10 px-4 space-y-8">
   <div class="flex items-center justify-between">
-    <% page_title = (@scope == "liked") ? "好みの傾向" : "よく飲んでいる傾向" %>
-    <h1 class="text-2xl font-semibold"><%= page_title %></h1>
+    <% page_title_key = (@scope == "liked") ? "liked" : "all" %>
+    <h1 class="text-2xl font-semibold"><%= t(".title.#{page_title_key}") %></h1>
   </div>
 
   <!-- タブ：全記録 / ★4以上 -->
   <div class="inline-flex rounded-full border bg-white p-1">
-    <%= link_to "全記録（よく飲む）",
+    <%= link_to t(".tabs.all"),
                 preferences_path(scope: "all"),
                 class: "px-4 py-2 rounded-full text-sm font-semibold transition " +
                        (@scope == "all" ? "bg-amber-700 text-white" : "text-gray-700 hover:bg-gray-50") %>
 
-    <%= link_to "★4以上（好き）",
+    <%= link_to t(".tabs.liked"),
                 preferences_path(scope: "liked"),
                 class: "px-4 py-2 rounded-full text-sm font-semibold transition " +
                        (@scope == "liked" ? "bg-amber-700 text-white" : "text-gray-700 hover:bg-gray-50") %>
@@ -19,14 +19,14 @@
 
   <% if !@preference[:available] %>
     <div class="rounded border p-4">
-      この条件では表示できる記録がありません。
+      <%= t(".empty") %>
     </div>
   <% else %>
     <!-- サマリー -->
     <div class="rounded-xl border bg-white p-6 shadow-sm space-y-2">
-      <% summary_prefix = (@scope == "liked") ? "好む傾向です" : "よく飲んでいます" %>
+      <% summary_suffix_key = (@scope == "liked") ? "liked" : "all" %>
       <p class="text-lg font-semibold text-amber-800">
-        あなたは「<%= @preference[:summary_roast] %>」のコーヒーを <%= summary_prefix %>。
+        <%= t(".summary.text", roast: @preference[:summary_roast], suffix: t(".summary.suffix.#{summary_suffix_key}")) %>
       </p>
 
       <p class="text-sm text-gray-600">
@@ -41,22 +41,22 @@
     <div class="grid md:grid-cols-2 gap-6">
       <!-- 焙煎度（円グラフ） -->
       <div class="rounded-xl border bg-white p-6 shadow-sm wrapper w-full overflow-hidden">
-        <h2 class="text-lg font-semibold mb-1">焙煎度の割合（件数）</h2>
+        <h2 class="text-lg font-semibold mb-1"><%= t(".charts.roast.title") %></h2>
         <p class="text-xs text-gray-500 mb-3"><%= @preference[:charts_reason] %></p>
         <%= pie_chart @preference[:roast_pie], donut: true, legend: "bottom", height: "260px", width: "100%", library: { responsive: true, maintainAspectRatio: false } %>
       </div>
 
       <!-- 味（棒グラフ） -->
       <div class="rounded-xl border bg-white p-6 shadow-sm wrapper w-full overflow-hidden">
-        <h2 class="text-lg font-semibold mb-1">味の傾向（0〜10）</h2>
-        <p class="text-xs text-gray-500 mb-3">選んだ記録の平均（件数ベース）です。</p>
+        <h2 class="text-lg font-semibold mb-1"><%= t(".charts.taste.title") %></h2>
+        <p class="text-xs text-gray-500 mb-3"><%= t(".charts.taste.note") %></p>
         <%= column_chart @preference[:taste_bar], min: 0, max: 10, height: "260px", width: "100%", library: { responsive: true, maintainAspectRatio: false } %>
       </div>
     </div>
 
     <!-- Top3ランキング -->
     <div class="rounded-xl border bg-white p-6 shadow-sm">
-      <h2 class="text-lg font-semibold mb-4">焙煎度ランキング（Top3）</h2>
+      <h2 class="text-lg font-semibold mb-4"><%= t(".ranking.title") %></h2>
 
       <div class="space-y-3">
         <% @preference[:ranking].each_with_index do |item, idx| %>
@@ -65,7 +65,7 @@
               <p class="text-sm text-gray-500">#<%= idx + 1 %></p>
               <p class="text-lg font-semibold text-gray-900"><%= item[:label] %></p>
               <p class="text-sm text-gray-600">
-                割合：<%= item[:percent] %>% ・件数：<%= item[:count] %>件
+                <%= t(".ranking.row", percent: item[:percent], count: item[:count]) %>
               </p>
             </div>
           </div>
@@ -73,7 +73,7 @@
       </div>
 
       <p class="text-xs text-gray-500 mt-4">
-        「割合」は、選んだ記録の件数に対する比率です。
+        <%= t(".ranking.note") %>
       </p>
     </div>
   <% end %>

@@ -1,0 +1,27 @@
+ja:
+  app:
+    name: "TrueCup"
+  date:
+    formats:
+      default: "%Y/%m/%d"
+      long: "%Y/%m/%d"
+      short: "%m/%d"
+  time:
+    formats:
+      default: "%Y/%m/%d %H:%M:%S"
+      long: "%Y/%m/%d(%a) %H:%M:%S %z"
+      short: "%y/%m/%d %H:%M"
+      only_time: "%H:%M"
+  common:
+    taste_levels:
+      strength:
+        - "弱い"
+        - "普通"
+        - "強い"
+  views:
+    pagination:
+      first: "最初"
+      last: "最後"
+      previous: "前へ"
+      next: "次へ"
+      truncate: "…"
