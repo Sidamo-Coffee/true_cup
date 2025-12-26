@@ -4,6 +4,9 @@
 <% roast_label = t(".roast_label.#{roast_key}", default: t(".roast_label.default")) %>
 <% tagline = t(".tagline.#{roast_key}", default: t(".tagline.default")) %>
 <% roast_hint = t(".roast_hint.#{roast_key}", default: t(".roast_hint.default")) %>
+<% share_text = t(".share.text", tagline: tagline, roast: roast_label) %>
+<% share_url  = "https://twitter.com/intent/tweet?text=#{ERB::Util.url_encode(share_text)}&url=#{ERB::Util.url_encode(root_url)}" %>
+
 
 <div class="max-w-3xl mx-auto py-10 px-4">
   <h1 class="text-2xl font-semibold mb-6 text-center">
@@ -47,5 +50,9 @@
     <%= link_to t(".actions.back"),
                 mypage_path,
                 class: "px-4 py-2 rounded-full text-sm font-semibold border border-amber-700 text-white bg-amber-700 hover:bg-amber-800 text-center" %>
+    <%= link_to t(".actions.share_x"),
+                share_url,
+                target: "_blank", rel: "noopener",
+                class: "px-4 py-2 rounded-full text-sm font-semibold border border-gray-300 hover:bg-gray-50 text-center" %>
   </div>
 </div>

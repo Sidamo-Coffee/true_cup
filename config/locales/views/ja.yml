@@ -105,6 +105,9 @@ ja:
       actions:
         retry: "もう一度診断する"
         back: "マイページへ戻る"
+        share_x: "診断結果をXでシェア"
+      share:
+        text: "TrueCupで味覚診断しました。私のタイプは「%{tagline}」（おすすめ：%{roast}） #TrueCup"
   mypage:
     show:
       greeting: "%{name}さん、こんにちは！"
