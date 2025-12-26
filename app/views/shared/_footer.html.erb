@@ -1,8 +1,8 @@
 <footer class="border-t border-stone-200 bg-stone-900 text-amber-50 mt-8">
   <div class="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs md:text-sm">
     <div class="flex gap-4">
-      <a href="#" class="hover:underline underline-offset-4"><%= t(".terms") %></a>
-      <a href="#" class="hover:underline underline-offset-4"><%= t(".privacy") %></a>
+      <%= link_to t(".terms"), terms_path, class: "hover:underline underline-offset-4" %>
+      <%= link_to t(".privacy"), privacy_path, class: "hover:underline underline-offset-4" %>
     </div>
     <p class="text-stone-300">
       <%= t(".copyright", year: Time.current.year) %>
