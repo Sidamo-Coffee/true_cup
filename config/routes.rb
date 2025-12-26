@@ -9,7 +9,8 @@ Rails.application.routes.draw do
   resource :taste_profile, only: %i[show]
   resources :coffee_logs
   resource :preferences, only: %i[show]
-
+  get "/terms",   to: "static_pages#terms"
+  get "/privacy", to: "static_pages#privacy"
   get "mypage", to: "mypage#show", as: :mypage
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
