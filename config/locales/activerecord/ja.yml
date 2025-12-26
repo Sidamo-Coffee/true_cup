@@ -2,6 +2,7 @@ ja:
   activerecord:
     models:
       coffee_log: "コーヒー記録"
+      user: "ユーザー"
     attributes:
       coffee_log:
         drank_on: "日付"
@@ -14,6 +15,12 @@ ja:
         bitterness: "苦み"
         overall_rating: "好み度"
         memo: "一言メモ(任意)"
+      user:
+        name: "名前"
+        email: "メールアドレス"
+        password: "パスワード"
+        password_confirmation: "パスワード（確認）"
+        current_password: "現在のパスワード"
 
     enums:
       coffee_log:
