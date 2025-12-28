@@ -46,3 +46,4 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+/.DS_Store

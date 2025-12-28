@@ -39,4 +39,5 @@
 
 /node_modules
 /vendor/bundle
-/.DS_Store
+.DS_Store
+**/.DS_Store
