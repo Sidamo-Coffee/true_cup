@@ -43,13 +43,14 @@
   </div>
 
   <div class="mt-8 flex flex-col sm:flex-row justify-center gap-3">
+    <%= link_to t(".actions.back"),
+                mypage_path,
+                class: "px-4 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 text-center" %>
+
     <%= link_to t(".actions.retry"),
                 new_taste_diagnosis_path,
                 class: "px-4 py-2 rounded-full text-sm font-semibold border border-amber-700 text-amber-700 hover:bg-amber-50 text-center" %>
 
-    <%= link_to t(".actions.back"),
-                mypage_path,
-                class: "px-4 py-2 rounded-full text-sm font-semibold border border-amber-700 text-white bg-amber-700 hover:bg-amber-800 text-center" %>
     <%= link_to t(".actions.share_x"),
                 share_url,
                 target: "_blank", rel: "noopener",

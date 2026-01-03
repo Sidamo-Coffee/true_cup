@@ -166,5 +166,21 @@ class TasteDiagnosisLogic
     [preferred_roast, taste_type]
   end
 
+  def self.apply_result_to_user!(user:, result:)
+    taste_profile = user.taste_profile || user.build_taste_profile
+    taste_profile.assign_attributes(
+      taste_type:        result.taste_type,
+      description:       result.description,
+      bitterness_score:  result.scores[:bitterness],
+      acidity_score:     result.scores[:acidity],
+      sweetness_score:   result.scores[:sweetness],
+      body_score:        result.scores[:body],
+      preferred_roast:   result.preferred_roast,
+      diagnosed_at:      Time.current
+    )
+    taste_profile.save!
+    taste_profile
+  end
+  
   private_class_method :calculate_scores, :judge_roast_and_type
 end

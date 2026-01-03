@@ -17,6 +17,7 @@ class TrialResultsController < ApplicationController
     page_url   = trial_result_url(type: @roast_key)
 
     @x_share_url = TasteDiagnosisLogic.build_x_share_url(text: share_text, url: page_url)
+    @from_trial = cookies.encrypted[:trial_answers].present?
   end
 end
 

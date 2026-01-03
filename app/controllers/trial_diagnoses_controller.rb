@@ -16,6 +16,11 @@ class TrialDiagnosesController < ApplicationController
       return render "taste_diagnoses/new", status: :unprocessable_entity
     end
 
+    cookies.encrypted[:trial_answers] = {
+      value:   answers.to_h.to_json,
+      expires: 1.hour.from_now
+    }
+
     result = TasteDiagnosisLogic.diagnose(answers)
     redirect_to trial_result_path(type: result.preferred_roast)
   end
