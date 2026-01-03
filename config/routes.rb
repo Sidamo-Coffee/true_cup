@@ -7,6 +7,10 @@ Rails.application.routes.draw do
   root "static_pages#top"
   resource :taste_diagnosis, only: %i[new create]
   resource :taste_profile, only: %i[show]
+  get  "trial_diagnosis", to: "trial_diagnoses#new"
+  post "trial_diagnosis", to: "trial_diagnoses#create"
+  get "trial_results/:type", to: "trial_results#show", as: :trial_result,
+       constraints: { type: /light|medium|medium_dark|dark/ }
   resources :coffee_logs
   resource :preferences, only: %i[show]
   get "/terms",   to: "static_pages#terms"

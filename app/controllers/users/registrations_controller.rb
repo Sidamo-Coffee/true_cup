@@ -49,14 +49,29 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # def configure_account_update_params
   #   devise_parameter_sanitizer.permit(:account_update, keys: [:attribute])
   # end
-
-  # The path used after sign up.
   def after_sign_up_path_for(resource)
+    raw = cookies.encrypted[:trial_answers]
+
+    if raw.present?
+      begin
+        parsed = JSON.parse(raw) # {"chocolate"=>"...", ...}
+        answers = TasteDiagnosisLogic.extract_answers(ActionController::Parameters.new(answers: parsed)[:answers])
+
+        if answers.present?
+          result = TasteDiagnosisLogic.diagnose(answers)
+          TasteDiagnosisLogic.apply_result_to_user!(user: resource, result: result)
+        end
+      rescue JSON::ParserError
+        # 何もしない（trial無し扱いで通常フローへ）
+      ensure
+        cookies.delete(:trial_answers)
+      end
+
+      # ★ trialあり：診断済みとしてマイページへ
+      return mypage_path
+    end
+
+    # ★ trialなし：従来どおり診断へ
     new_taste_diagnosis_path
   end
-
-  # The path used after sign up for inactive accounts.
-  # def after_inactive_sign_up_path_for(resource)
-  #   super(resource)
-  # end
 end

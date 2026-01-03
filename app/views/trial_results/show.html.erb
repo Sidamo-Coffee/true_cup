@@ -1,0 +1,70 @@
+<% content_for :title, t("taste_profiles.show.title") %>
+
+<% roast_key   = @roast_key %>
+<% roast_label = t("taste_profiles.show.roast_label.#{roast_key}", default: t("taste_profiles.show.roast_label.default")) %>
+<% tagline     = t("taste_profiles.show.tagline.#{roast_key}", default: t("taste_profiles.show.tagline.default")) %>
+<% roast_hint  = t("taste_profiles.show.roast_hint.#{roast_key}", default: t("taste_profiles.show.roast_hint.default")) %>
+
+<div class="max-w-3xl mx-auto py-10 px-4">
+  <h1 class="text-2xl font-semibold mb-6 text-center">
+    <%= t("taste_profiles.show.heading") %>
+  </h1>
+
+  <div class="bg-white rounded-xl shadow-sm p-6 space-y-4">
+    <div class="flex items-center justify-between gap-3">
+      <% if @from_trial %>
+        <p class="text-sm text-gray-600">
+          <%= t("taste_profiles.show.diagnosed_on", date: l(Time.current.to_date, format: :long)) %>
+        </p>
+      <% end %>
+
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+        <%= tagline %>
+      </span>
+    </div>
+
+    <p class="text-lg font-semibold">
+      <%= t("taste_profiles.show.recommend", roast: roast_label) %>
+    </p>
+
+    <p class="text-sm text-gray-800 leading-relaxed">
+      <%= @description %>
+    </p>
+
+    <details class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <summary class="cursor-pointer text-sm font-semibold text-gray-800">
+        <%= t("taste_profiles.show.what_is", roast: roast_label) %>
+      </summary>
+      <p class="text-sm text-gray-700 mt-2 leading-relaxed">
+        <%= roast_hint %>
+      </p>
+    </details>
+  </div>
+
+  <div class="mt-8 flex flex-col sm:flex-row justify-center gap-3">
+    <% if @from_trial %>
+      <%= link_to t("taste_profiles.show.actions.retry"),
+                  trial_diagnosis_path,
+                  class: "px-4 py-2 rounded-full text-sm font-semibold border border-amber-700 text-amber-700 hover:bg-amber-50 text-center" %>
+
+      <%= link_to t("taste_profiles.show.actions.share_x"),
+                  @x_share_url,
+                  target: "_blank", rel: "noopener",
+                  class: "px-4 py-2 rounded-full text-sm font-semibold border border-gray-300 hover:bg-gray-50 text-center" %>
+
+      <%= link_to t("trial_results.show.actions.signup"),
+                  new_user_registration_path,
+                  class: "px-4 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 text-center" %>
+      <%= link_to t("trial_results.show.actions.back"),
+                  root_path,
+                  class: "px-4 py-2 rounded-full text-sm font-semibold border border-gray-300 hover:bg-gray-50 text-center" %>
+    <% else %>
+      <%= link_to t("trial_results.show.actions.try_yourself"),
+                  trial_diagnosis_path,
+                  class: "px-4 py-2 rounded-full text-sm font-semibold border border-amber-700 text-amber-700 hover:bg-amber-50 text-center" %>
+      <%= link_to t("trial_results.show.actions.back"),
+                  root_path,
+                  class: "px-4 py-2 rounded-full text-sm font-semibold border border-gray-300 hover:bg-gray-50 text-center" %>
+    <% end %>
+  </div>
+</div>

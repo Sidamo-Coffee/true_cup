@@ -9,7 +9,7 @@
     <%= t(".lead_html") %>
   </p>
 
-  <%= form_with url: taste_diagnosis_path, method: :post, local: true do %>
+  <%= form_with url: @form_url, method: :post, local: true do %>
     <div class="space-y-8">
       <% @questions.each_with_index do |question, index| %>
         <% q_key = question[:key] %>
