@@ -20,4 +20,3 @@ class TrialResultsController < ApplicationController
     @from_trial = cookies.encrypted[:trial_answers].present?
   end
 end
-

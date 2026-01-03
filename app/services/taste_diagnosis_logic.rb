@@ -163,7 +163,7 @@ class TasteDiagnosisLogic
       end
     end
 
-    [preferred_roast, taste_type]
+    [ preferred_roast, taste_type ]
   end
 
   def self.apply_result_to_user!(user:, result:)
@@ -181,6 +181,5 @@ class TasteDiagnosisLogic
     taste_profile.save!
     taste_profile
   end
-  
   private_class_method :calculate_scores, :judge_roast_and_type
 end
