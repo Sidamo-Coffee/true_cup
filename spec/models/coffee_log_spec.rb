@@ -10,11 +10,11 @@ RSpec.describe CoffeeLog, type: :model do
     it { is_expected.to validate_presence_of(:bitterness) }
     it { is_expected.to validate_presence_of(:acidity) }
     it { is_expected.to validate_presence_of(:overall_rating) }
-    
+
     it { is_expected.to validate_length_of(:coffee_name).is_at_most(100) }
     it { is_expected.to validate_length_of(:cafe_name).is_at_most(100) }
     it { is_expected.to validate_length_of(:memo).is_at_most(1000) }
-    
+
     it { is_expected.to validate_numericality_of(:bitterness).only_integer.is_in(0..2) }
     it { is_expected.to validate_numericality_of(:acidity).only_integer.is_in(0..2) }
     it { is_expected.to validate_numericality_of(:overall_rating).only_integer.is_in(1..5) }

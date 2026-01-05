@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :taste_profile do
     association :user
-    
+
     taste_type { :medium_like }
     description { "全体のバランスが良いタイプです。気分やシーンに合わせて幅広いコーヒーを楽しめます。" }
     bitterness_score { 5 }

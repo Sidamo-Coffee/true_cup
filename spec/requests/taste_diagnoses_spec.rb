@@ -41,9 +41,9 @@ RSpec.describe "TasteDiagnoses", type: :request do
       it "適切な焙煎度が判定されること（深煎り寄りの回答）" do
         post taste_diagnosis_path, params: { answers: valid_answers }
         profile = user.reload.taste_profile
-        
+
         # この回答パターンは深煎り寄りになるはず
-        expect(profile.preferred_roast).to be_in(['medium_dark', 'dark'])
+        expect(profile.preferred_roast).to be_in([ 'medium_dark', 'dark' ])
         expect(profile.bitterness_score).to be >= 5
       end
     end

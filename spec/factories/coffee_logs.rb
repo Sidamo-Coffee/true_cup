@@ -1,7 +1,6 @@
 FactoryBot.define do
   factory :coffee_log do
     association :user
-    
     drank_on { Date.current }
     coffee_name { Faker::Coffee.blend_name }
     place { :cafe }

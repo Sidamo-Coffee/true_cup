@@ -7,16 +7,16 @@ RSpec.describe TasteProfile, type: :model do
     it { is_expected.to validate_presence_of(:taste_type) }
     it { is_expected.to validate_presence_of(:preferred_roast) }
     it { is_expected.to validate_presence_of(:diagnosed_at) }
-    
+
     it { is_expected.to validate_presence_of(:bitterness_score) }
     it { is_expected.to validate_numericality_of(:bitterness_score).only_integer.is_in(0..10) }
-    
+
     it { is_expected.to validate_presence_of(:acidity_score) }
     it { is_expected.to validate_numericality_of(:acidity_score).only_integer.is_in(0..10) }
-    
+
     it { is_expected.to validate_presence_of(:sweetness_score) }
     it { is_expected.to validate_numericality_of(:sweetness_score).only_integer.is_in(0..10) }
-    
+
     it { is_expected.to validate_presence_of(:body_score) }
     it { is_expected.to validate_numericality_of(:body_score).only_integer.is_in(0..10) }
   end
