@@ -1,16 +1,35 @@
-<h2>Forgot your password?</h2>
+<div class="max-w-md mx-auto py-10 px-4">
+  <h1 class="text-2xl font-semibold mb-6 text-center">パスワードの再設定</h1>
 
-<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+  <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <p class="text-sm text-gray-600 mb-4">
+      登録されているメールアドレスを入力してください。<br>
+      パスワード再設定用のリンクをお送りします。
+    </p>
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+    <%= form_for(resource,
+                 as: resource_name,
+                 url: password_path(resource_name),
+                 html: { method: :post, class: "space-y-4" }) do |f| %>
+
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div>
+        <%= f.label :email, "メールアドレス", class: "block text-sm font-medium mb-1" %>
+        <%= f.email_field :email,
+              autofocus: true,
+              autocomplete: "email",
+              class: "w-full rounded border px-3 py-2" %>
+      </div>
+
+      <div class="pt-2">
+        <%= f.submit "再設定メールを送信",
+              class: "w-full rounded bg-amber-700 px-4 py-2 text-white font-semibold hover:bg-amber-800 transition" %>
+      </div>
+    <% end %>
   </div>
 
-  <div class="actions">
-    <%= f.submit "Send me reset password instructions" %>
+  <div class="text-center text-sm text-gray-600">
+    <%= link_to "ログインページに戻る", new_session_path(resource_name), class: "hover:underline" %>
   </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
+</div>
