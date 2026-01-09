@@ -40,7 +40,7 @@ RSpec.describe "Passwords", type: :request do
           user.reload
           mail = ActionMailer::Base.deliveries.last
 
-          expect(mail.to).to eq([user.email])
+          expect(mail.to).to eq([ user.email ])
           expect(mail.subject).to include("パスワード")
           expect(mail.body.encoded).to include("パスワード再設定")
         end
@@ -66,7 +66,6 @@ RSpec.describe "Passwords", type: :request do
           expect(response).to have_http_status(:see_other)
           follow_redirect!
           expect(response.body).to include("メールアドレス")
-
         end
       end
     end
