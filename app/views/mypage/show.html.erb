@@ -242,3 +242,33 @@
                   class: "inline-flex items-center justify-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition" %>
     <% end %>
   </section>
+  <section class="bg-white rounded-xl shadow-sm p-6">
+    <h2 class="text-lg font-semibold mb-4">アカウント設定</h2>
+    
+    <div class="space-y-4">
+      <!-- パスワード変更 -->
+      <div class="flex items-center justify-between py-3 border-b">
+        <div>
+          <p class="font-medium text-gray-900">パスワード変更</p>
+          <p class="text-sm text-gray-600">現在のパスワードを変更できます</p>
+        </div>
+        <%= link_to "変更する",
+                    edit_user_registration_path,
+                    class: "px-4 py-2 rounded border text-sm hover:bg-gray-50 transition" %>
+      </div>
+      
+      <!-- アカウント削除 -->
+      <div class="flex items-center justify-between py-3">
+        <div>
+          <p class="font-medium text-red-700">アカウントの削除</p>
+          <p class="text-sm text-gray-600">
+            アカウントを削除すると、全てのデータが完全に削除されます
+          </p>
+        </div>
+        <%= link_to "削除する",
+                    confirm_deletion_user_registration_path,
+                    class: "px-4 py-2 rounded border border-red-300 text-red-700 text-sm hover:bg-red-50 transition" %>
+      </div>
+    </div>
+  </section>
+</div>

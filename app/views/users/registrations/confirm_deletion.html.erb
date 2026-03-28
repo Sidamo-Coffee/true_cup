@@ -1,0 +1,65 @@
+<div class="max-w-3xl mx-auto py-10 px-4">
+  <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8 space-y-6">
+    <h1 class="text-2xl font-semibold text-center text-red-900">
+      アカウントの削除
+    </h1>
+
+    <p class="text-center text-sm text-gray-700 leading-relaxed">
+      本当にアカウントを削除しますか？<br>
+      この操作は取り消すことができません。
+    </p>
+
+    <!-- 警告ボックス -->
+    <div class="rounded-xl border border-red-200 bg-red-50 p-5 sm:p-6">
+      <div class="flex items-start gap-4">
+        <div class="shrink-0">
+          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="min-w-0">
+          <h2 class="font-semibold text-red-900">
+            以下のデータが完全に削除されます
+          </h2>
+
+          <ul class="mt-3 space-y-2 text-sm text-red-900/90">
+            <li>・プロフィール情報（名前、メールアドレスなど）</li>
+            <li>・味覚診断の結果</li>
+            <li>・全てのコーヒー記録（<%= @user.coffee_logs.count %>件）</li>
+            <li>・その他の全てのアカウント情報</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <%= form_with url: registration_path(resource_name),
+                  method: :delete,
+                  id: "delete_account_form",
+                  class: "space-y-4" do |f| %>
+
+      <div>
+        <%= label_tag :current_password, "パスワードを入力して削除を確認",
+                      class: "block text-sm font-medium text-gray-700 mb-2" %>
+        <%= password_field_tag :current_password, nil,
+              required: true,
+              autocomplete: "current-password",
+              class: "w-full rounded border px-3 py-2" %>
+        <p class="text-xs text-gray-500 mt-1">
+          セキュリティのため、現在のパスワードを入力してください
+        </p>
+      </div>
+
+      <%= f.submit "削除を実行する",
+            data: { turbo_confirm: "本当にアカウントを削除しますか？この操作は取り消せません。" },
+            class: "w-full px-6 py-3 rounded-lg border border-red-300 text-red-700 font-semibold hover:bg-red-50 transition" %>
+    <% end %>
+
+    <%= link_to "キャンセル",
+                mypage_path,
+                class: "block text-center text-sm text-gray-500 hover:underline mt-2" %>
+  </div>
+</div>
