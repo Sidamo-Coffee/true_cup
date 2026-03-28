@@ -89,4 +89,76 @@ RSpec.describe "Users", type: :request do
       expect(response).to redirect_to(root_path)
     end
   end
+
+  describe "アカウント削除" do
+    let(:user) { create(:user) }
+
+    describe "GET /users/confirm_deletion" do
+      context "ログインしていない場合" do
+        it "ログインページにリダイレクトされること" do
+          get confirm_deletion_user_registration_path
+          expect(response).to redirect_to(new_user_session_path)
+        end
+      end
+
+      context "ログインしている場合" do
+        before { sign_in user }
+
+        it "削除確認ページが表示されること" do
+          get confirm_deletion_user_registration_path
+          expect(response).to have_http_status(:success)
+        end
+      end
+    end
+
+    describe "DELETE /users" do
+      context "ログインしていない場合" do
+        it "ログインページにリダイレクトされること" do
+          delete user_registration_path
+          expect(response).to redirect_to(new_user_session_path)
+        end
+      end
+
+      context "ログインしている場合" do
+        before { sign_in user }
+
+        context "正しいパスワードを入力した場合" do
+          it "ユーザーが削除されること" do
+            expect {
+              delete user_registration_path, params: { current_password: "password123" }
+            }.to change(User, :count).by(-1)
+          end
+
+          it "トップページにリダイレクトされること" do
+            delete user_registration_path, params: { current_password: "password123" }
+            expect(response).to redirect_to(root_path)
+          end
+
+          context "コーヒー記録や診断結果がある場合" do
+            let(:user) { create(:user, :with_taste_profile, :with_coffee_logs) }
+
+            it "関連データも削除されること" do
+              user_id = user.id
+              delete user_registration_path, params: { current_password: "password123" }
+              expect(CoffeeLog.where(user_id: user_id)).to be_empty
+              expect(TasteProfile.where(user_id: user_id)).to be_empty
+            end
+          end
+        end
+
+        context "誤ったパスワードを入力した場合" do
+          it "ユーザーが削除されないこと" do
+            expect {
+              delete user_registration_path, params: { current_password: "wrongpassword" }
+            }.not_to change(User, :count)
+          end
+
+          it "削除確認ページにリダイレクトされること" do
+            delete user_registration_path, params: { current_password: "wrongpassword" }
+            expect(response).to redirect_to(confirm_deletion_user_registration_path)
+          end
+        end
+      end
+    end
+  end
 end
