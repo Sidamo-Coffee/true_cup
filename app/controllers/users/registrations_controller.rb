@@ -3,6 +3,11 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   # before_action :configure_sign_up_params, only: [:create]
   # before_action :configure_account_update_params, only: [:update]
+  before_action :authenticate_user!, only: [ :confirm_deletion ]
+
+  def confirm_deletion
+    @user = current_user
+  end
 
   # GET /resource/sign_up
   # def new
@@ -25,9 +30,15 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # end
 
   # DELETE /resource
-  # def destroy
-  #   super
-  # end
+  def destroy
+    unless current_user.valid_password?(params[:current_password])
+      redirect_to confirm_deletion_user_registration_path, alert: "パスワードが正しくありません。" and return
+    end
+
+    super do |resource|
+      Rails.logger.info "User #{resource.id} (#{resource.email}) deleted their account"
+    end
+  end
 
   # GET /resource/cancel
   # Forces the session data which is usually expired after sign
@@ -73,5 +84,9 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
     # ★ trialなし：従来どおり診断へ
     new_taste_diagnosis_path
+  end
+
+  def after_inactive_sign_up_path_for(resource)
+    root_path
   end
 end
