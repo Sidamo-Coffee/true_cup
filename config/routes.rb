@@ -3,7 +3,7 @@ Rails.application.routes.draw do
     registrations: "users/registrations"
   }
   devise_scope :user do
-    get 'users/confirm_deletion', to: 'users/registrations#confirm_deletion', as: :confirm_deletion_user_registration
+    get "users/confirm_deletion", to: "users/registrations#confirm_deletion", as: :confirm_deletion_user_registration
   end
   get "static_pages/top"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

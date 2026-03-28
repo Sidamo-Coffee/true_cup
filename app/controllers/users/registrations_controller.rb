@@ -3,7 +3,7 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   # before_action :configure_sign_up_params, only: [:create]
   # before_action :configure_account_update_params, only: [:update]
-  before_action :authenticate_user!, only: [:confirm_deletion]
+  before_action :authenticate_user!, only: [ :confirm_deletion ]
 
   def confirm_deletion
     @user = current_user
@@ -85,7 +85,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
     # ★ trialなし：従来どおり診断へ
     new_taste_diagnosis_path
   end
-  
+
   def after_inactive_sign_up_path_for(resource)
     root_path
   end
