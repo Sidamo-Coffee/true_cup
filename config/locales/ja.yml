@@ -1,6 +1,8 @@
 ja:
   app:
     name: "TrueCup"
+  ogp:
+    default_description: "コーヒーの好みを診断して、あなたに合った焙煎度を見つけよう。"
   date:
     formats:
       default: "%Y/%m/%d"
