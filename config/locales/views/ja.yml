@@ -1,5 +1,22 @@
 ja:
   shared:
+    onboarding_modal:
+      title: "TrueCupの使い方"
+      step_label: "%{current} / %{total}"
+      steps:
+        - title: "STEP 1：味覚診断"
+          body: "いくつかの質問に答えるだけで、あなたのコーヒーの好みのタイプがわかります。まずは診断からスタートしましょう。"
+        - title: "STEP 2：コーヒーを記録"
+          body: "飲んだコーヒーの焙煎度・酸味・苦み・好み度などをサッと記録。難しい知識は不要です。"
+        - title: "STEP 3：傾向を可視化"
+          body: "記録が増えるほど、よく選ぶ焙煎度や好みの味わいの傾向がグラフで見えてきます。"
+        - title: "STEP 4：おすすめを確認"
+          body: "診断結果と記録データをもとに、あなたへのおすすめ焙煎度とお店での伝え方をご提案します。"
+      actions:
+        next: "次へ"
+        back: "戻る"
+        close: "はじめる"
+        skip: "スキップ"
     header:
       tagline: "コーヒーの「好き」が見つかるアプリ"
       menu: "メニュー"
@@ -134,6 +151,7 @@ ja:
         recent_logs: "最近の記録"
 
       actions:
+        show_onboarding: "使い方を見る"
         to_detail: "詳細へ"
         new_log: "新規記録"
         logs_index: "記録一覧"

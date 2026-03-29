@@ -1,0 +1,91 @@
+<%
+  steps = t("shared.onboarding_modal.steps")
+  show_onboarding = show_onboarding_modal?
+%>
+
+<div
+  data-controller="onboarding"
+  data-onboarding-complete-url-value="<%= complete_onboarding_path %>"
+  data-show-onboarding="<%= show_onboarding %>"
+>
+  <!-- モーダル -->
+  <div
+    data-onboarding-target="modal"
+    class="<%= show_onboarding ? '' : 'hidden' %> fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative">
+      <!-- ヘッダー -->
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-semibold text-stone-800">
+          <%= t("shared.onboarding_modal.title") %>
+        </h2>
+        <span data-onboarding-target="stepLabel" class="text-xs text-gray-400">
+          1 / <%= steps.size %>
+        </span>
+      </div>
+
+      <!-- ステップコンテンツ -->
+      <% steps.each_with_index do |step, i| %>
+        <div data-onboarding-target="step" class="<%= i == 0 ? '' : 'hidden' %> space-y-3 min-h-[120px]">
+          <p class="text-sm font-semibold text-amber-800"><%= step[:title] %></p>
+          <p class="text-sm text-stone-700 leading-relaxed"><%= step[:body] %></p>
+        </div>
+      <% end %>
+
+      <!-- ドットインジケーター -->
+      <div class="flex justify-center gap-1.5 mt-5">
+        <% steps.size.times do |i| %>
+          <span
+            data-onboarding-target="dot"
+            class="w-2 h-2 rounded-full <%= i == 0 ? 'bg-amber-700' : 'bg-gray-200' %>"
+          ></span>
+        <% end %>
+      </div>
+
+      <!-- ボタン -->
+      <div class="mt-5 flex items-center justify-between">
+        <button
+          data-onboarding-target="backBtn"
+          data-action="click->onboarding#back"
+          class="invisible px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition"
+          type="button"
+        >
+          <%= t("shared.onboarding_modal.actions.back") %>
+        </button>
+
+        <div class="flex gap-2">
+          <button
+            data-onboarding-target="nextBtn"
+            data-action="click->onboarding#next"
+            class="px-5 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition"
+            type="button"
+          >
+            <%= t("shared.onboarding_modal.actions.next") %>
+          </button>
+
+          <button
+            data-onboarding-target="closeBtn"
+            data-action="click->onboarding#close"
+            class="hidden px-5 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition"
+            type="button"
+          >
+            <%= t("shared.onboarding_modal.actions.close") %>
+          </button>
+        </div>
+      </div>
+
+      <!-- スキップ -->
+      <div class="mt-3 text-center">
+        <button
+          data-action="click->onboarding#skip"
+          class="text-xs text-gray-400 hover:text-gray-600 transition underline underline-offset-2"
+          type="button"
+        >
+          <%= t("shared.onboarding_modal.actions.skip") %>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

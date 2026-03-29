@@ -19,6 +19,7 @@ Rails.application.routes.draw do
   get "/terms",   to: "static_pages#terms"
   get "/privacy", to: "static_pages#privacy"
   get "mypage", to: "mypage#show", as: :mypage
+  patch "onboarding/complete", to: "onboardings#complete", as: :complete_onboarding
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
