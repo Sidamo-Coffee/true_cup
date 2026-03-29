@@ -6,6 +6,19 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <% ogp_title       = content_for?(:ogp_title)       ? yield(:ogp_title)       : t("app.name") %>
+    <% ogp_description = content_for?(:ogp_description) ? yield(:ogp_description) : t("ogp.default_description") %>
+    <% ogp_image       = content_for?(:ogp_image)        ? yield(:ogp_image)       : "#{request.base_url}/ogp/default.png" %>
+    <meta property="og:site_name"   content="<%= t('app.name') %>">
+    <meta property="og:type"        content="website">
+    <meta property="og:title"       content="<%= ogp_title %>">
+    <meta property="og:description" content="<%= ogp_description %>">
+    <meta property="og:image"       content="<%= ogp_image %>">
+    <meta property="og:url"         content="<%= request.original_url %>">
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="<%= ogp_title %>">
+    <meta name="twitter:description" content="<%= ogp_description %>">
+    <meta name="twitter:image"       content="<%= ogp_image %>">
 
     <%= yield :head %>
 

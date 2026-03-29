@@ -7,6 +7,9 @@
 <% share_text = t(".share.text", tagline: tagline, roast: roast_label) %>
 <% share_url  = "https://twitter.com/intent/tweet?text=#{ERB::Util.url_encode(share_text)}&url=#{ERB::Util.url_encode(root_url)}" %>
 
+<% content_for :ogp_image,       "#{request.base_url}/ogp/#{roast_key}.png" %>
+<% content_for :ogp_description, @taste_profile.description %>
+
 
 <div class="max-w-3xl mx-auto py-10 px-4">
   <h1 class="text-2xl font-semibold mb-6 text-center">

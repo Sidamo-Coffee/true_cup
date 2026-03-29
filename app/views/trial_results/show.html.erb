@@ -5,6 +5,9 @@
 <% tagline     = t("taste_profiles.show.tagline.#{roast_key}", default: t("taste_profiles.show.tagline.default")) %>
 <% roast_hint  = t("taste_profiles.show.roast_hint.#{roast_key}", default: t("taste_profiles.show.roast_hint.default")) %>
 
+<% content_for :ogp_image,       "#{request.base_url}/ogp/#{roast_key}.png" %>
+<% content_for :ogp_description, @description %>
+
 <div class="max-w-3xl mx-auto py-10 px-4">
   <h1 class="text-2xl font-semibold mb-6 text-center">
     <%= t("taste_profiles.show.heading") %>
