@@ -1,3 +1,5 @@
+<%= render "shared/onboarding_modal" %>
+
 <div class="max-w-3xl mx-auto py-10 px-4 space-y-8">
   <!-- ヘッダー（挨拶） -->
   <section>
@@ -8,6 +10,14 @@
     <p class="text-sm text-gray-600 mt-1">
       <%= t(".intro") %>
     </p>
+
+    <button
+      onclick="document.querySelector('[data-onboarding-target=modal]').classList.remove('hidden'); document.body.classList.add('overflow-hidden')"
+      class="mt-2 inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition underline underline-offset-2"
+      type="button"
+    >
+      <%= t(".actions.show_onboarding") %>
+    </button>
   </section>
 
   <% if @taste_profile.present? %>
