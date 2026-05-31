@@ -18,7 +18,7 @@
   <% if @coffee_logs.any? %>
     <div class="bg-white rounded-xl shadow-sm divide-y">
       <% @coffee_logs.each do |log| %>
-        <div class="p-5 flex items-start justify-between gap-4">
+        <div class="p-5 flex items-start justify-between gap-4 hover:bg-amber-50 transition-colors duration-150 rounded-xl">
           <div class="min-w-0">
             <p class="text-sm text-gray-500">
               <%= l log.drank_on, format: :long %> / <%= log.place_label %>

@@ -9,36 +9,63 @@
     <%= t(".lead_html") %>
   </p>
 
-  <%= form_with url: @form_url, method: :post, local: true do %>
-    <div class="space-y-8">
-      <% @questions.each_with_index do |question, index| %>
-        <% q_key = question[:key] %>
-
-        <section class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-base font-semibold mb-4">
-            <%= t(".question_title", number: index + 1, title: t("taste_diagnoses.questions.#{q_key}.title")) %>
-          </h2>
-
-          <div class="space-y-3">
-            <% question[:options].each do |opt| %>
-              <label class="flex items-center gap-3 cursor-pointer">
-                <%= radio_button_tag "answers[#{q_key}]",
-                                     opt,
-                                     false,
-                                     class: "h-4 w-4 border-gray-300" %>
-                <span class="text-sm text-gray-800">
-                  <%= t("taste_diagnoses.questions.#{q_key}.options.#{opt}") %>
-                </span>
-              </label>
-            <% end %>
-          </div>
-        </section>
-      <% end %>
+  <!-- プログレスバー -->
+  <div class="mb-8" data-controller="diagnosis">
+    <div class="flex justify-between text-xs text-gray-500 mb-1">
+      <span><%= t(".progress") %></span>
+      <span data-diagnosis-target="stepCounter">1 / <%= @questions.length %></span>
+    </div>
+    <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+      <div class="h-full bg-amber-600 rounded-full transition-[width] duration-500 ease-in-out"
+           style="width: <%= (1.0 / @questions.length * 100).round %>%"
+           data-diagnosis-target="progressBar"></div>
     </div>
 
-    <div class="mt-10 text-center">
-      <%= submit_tag t(".submit"),
-                     class: "inline-flex items-center justify-center px-6 py-3 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition" %>
-    </div>
-  <% end %>
+    <%= form_with url: @form_url, method: :post, local: true,
+                  data: { action: "submit->loading#submit", controller: "loading" } do %>
+      <div class="mt-8 space-y-8">
+        <% @questions.each_with_index do |question, index| %>
+          <% q_key = question[:key] %>
+
+          <section class="bg-white rounded-xl shadow-sm p-6 hidden transition-shadow duration-200"
+                   data-diagnosis-target="step">
+            <h2 class="text-base font-semibold mb-4">
+              <%= t(".question_title", number: index + 1, title: t("taste_diagnoses.questions.#{q_key}.title")) %>
+            </h2>
+
+            <div class="space-y-2">
+              <% question[:options].each do |opt| %>
+                <label class="flex items-center gap-3 cursor-pointer rounded-lg px-3 py-2 hover:bg-amber-50 transition-colors duration-150">
+                  <%= radio_button_tag "answers[#{q_key}]", opt, false,
+                                       class: "h-4 w-4 border-gray-300" %>
+                  <span class="text-sm text-gray-800">
+                    <%= t("taste_diagnoses.questions.#{q_key}.options.#{opt}") %>
+                  </span>
+                </label>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+      </div>
+
+      <div class="mt-10 flex justify-center items-center gap-4">
+        <button type="button"
+                class="invisible inline-flex items-center justify-center px-6 py-3 rounded-full text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 active:scale-95 transition"
+                data-diagnosis-target="backBtn"
+                data-action="click->diagnosis#back">
+          ← <%= t(".back") %>
+        </button>
+        <button type="button"
+                class="inline-flex items-center justify-center px-6 py-3 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 active:scale-95 transition"
+                data-diagnosis-target="nextBtn"
+                data-action="click->diagnosis#next">
+          <%= t(".next") %> →
+        </button>
+        <%= submit_tag t(".submit"),
+                       class: "inline-flex items-center justify-center px-6 py-3 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 active:scale-95 transition",
+                       style: "display: none",
+                       data: { diagnosis_target: "submitBtn", loading_target: "submit" } %>
+      </div>
+    <% end %>
+  </div>
 </div>

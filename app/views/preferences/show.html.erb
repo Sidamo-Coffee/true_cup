@@ -43,14 +43,18 @@
       <div class="rounded-xl border bg-white p-6 shadow-sm wrapper w-full overflow-hidden">
         <h2 class="text-lg font-semibold mb-1"><%= t(".charts.roast.title") %></h2>
         <p class="text-xs text-gray-500 mb-3"><%= @preference[:charts_reason] %></p>
-        <%= pie_chart @preference[:roast_pie], donut: true, legend: "bottom", height: "260px", width: "100%", library: { responsive: true, maintainAspectRatio: false } %>
+        <%= pie_chart @preference[:roast_pie], donut: true, legend: "bottom", height: "260px", width: "100%",
+                      library: { responsive: true, maintainAspectRatio: false,
+                                 animation: { duration: 800, easing: "easeInOutQuart" } } %>
       </div>
 
       <!-- 味（棒グラフ） -->
       <div class="rounded-xl border bg-white p-6 shadow-sm wrapper w-full overflow-hidden">
         <h2 class="text-lg font-semibold mb-1"><%= t(".charts.taste.title") %></h2>
         <p class="text-xs text-gray-500 mb-3"><%= t(".charts.taste.note") %></p>
-        <%= column_chart @preference[:taste_bar], min: 0, max: 10, height: "260px", width: "100%", library: { responsive: true, maintainAspectRatio: false } %>
+        <%= column_chart @preference[:taste_bar], min: 0, max: 10, height: "260px", width: "100%",
+                         library: { responsive: true, maintainAspectRatio: false,
+                                    animation: { duration: 800, easing: "easeInOutQuart" } } %>
       </div>
     </div>
 
