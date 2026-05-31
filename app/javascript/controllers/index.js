@@ -9,3 +9,12 @@ application.register("hello", HelloController)
 
 import OnboardingController from "./onboarding_controller"
 application.register("onboarding", OnboardingController)
+
+import FlashController from "./flash_controller"
+application.register("flash", FlashController)
+
+import DiagnosisController from "./diagnosis_controller"
+application.register("diagnosis", DiagnosisController)
+
+import LoadingController from "./loading_controller"
+application.register("loading", LoadingController)
