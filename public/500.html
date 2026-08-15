@@ -1,66 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <title>We're sorry, but something went wrong (500)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8">
+  <title>問題が発生しました - True Cup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-  .rails-default-error-page {
-    background-color: #EFEFEF;
-    color: #2E2F30;
-    text-align: center;
-    font-family: arial, sans-serif;
-    margin: 0;
-  }
-
-  .rails-default-error-page div.dialog {
-    width: 95%;
-    max-width: 33em;
-    margin: 4em auto 0;
-  }
-
-  .rails-default-error-page div.dialog > div {
-    border: 1px solid #CCC;
-    border-right-color: #999;
-    border-left-color: #999;
-    border-bottom-color: #BBB;
-    border-top: #B00100 solid 4px;
-    border-top-left-radius: 9px;
-    border-top-right-radius: 9px;
-    background-color: white;
-    padding: 7px 12% 0;
-    box-shadow: 0 3px 8px rgba(50, 50, 50, 0.17);
-  }
-
-  .rails-default-error-page h1 {
-    font-size: 100%;
-    color: #730E15;
-    line-height: 1.5em;
-  }
-
-  .rails-default-error-page div.dialog > p {
-    margin: 0 0 1em;
-    padding: 1em;
-    background-color: #F7F7F7;
-    border: 1px solid #CCC;
-    border-right-color: #999;
-    border-left-color: #999;
-    border-bottom-color: #999;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-top-color: #DADADA;
-    color: #666;
-    box-shadow: 0 3px 8px rgba(50, 50, 50, 0.17);
-  }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #fffbeb;
+      color: #292524;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+    .container { max-width: 480px; width: 100%; }
+    svg { margin: 0 auto 2rem; display: block; }
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: #92400e; }
+    p { font-size: 0.95rem; color: #57534e; line-height: 1.7; margin-bottom: 1.5rem; }
+    a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.65rem 1.5rem;
+      border-radius: 9999px;
+      background-color: #b45309;
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background-color 0.15s;
+    }
+    a:hover { background-color: #92400e; }
+    .code { font-size: 4rem; font-weight: 800; color: #fde68a; margin-bottom: 1rem; letter-spacing: -2px; }
   </style>
 </head>
+<body>
+  <div class="container">
+    <svg width="200" height="170" viewBox="0 0 200 170" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- Broken steam -->
+      <path d="M78 44 C76 36 81 30 78 22" stroke="#d97706" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.25"/>
+      <path d="M122 44 C120 36 125 30 122 22" stroke="#d97706" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.25"/>
 
-<body class="rails-default-error-page">
-  <!-- This file lives in public/500.html -->
-  <div class="dialog">
-    <div>
-      <h1>We're sorry, but something went wrong.</h1>
-    </div>
-    <p>If you are the application owner check the logs for more information.</p>
+      <!-- Cup -->
+      <path d="M52 62 Q100 58 148 62 L136 132 Q100 137 64 132 Z" fill="#d97706"/>
+      <rect x="46" y="54" width="108" height="13" rx="6" fill="#b45309"/>
+      <ellipse cx="100" cy="60" rx="48" ry="5" fill="#78350f" opacity="0.45"/>
+      <path d="M144 76 Q164 76 164 92 Q164 108 144 108" stroke="#92400e" stroke-width="9" fill="none" stroke-linecap="round"/>
+
+      <!-- Crack running down the cup -->
+      <path d="M100 56 L92 76 L106 92 L94 110 L102 134"
+            stroke="#fffbeb" stroke-width="6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M92 76 L78 82" stroke="#fffbeb" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M106 92 L122 96" stroke="#fffbeb" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+      <!-- Saucer -->
+      <ellipse cx="100" cy="137" rx="62" ry="9" fill="#fbbf24"/>
+
+      <!-- Leaked drops -->
+      <circle cx="76" cy="150" r="4.5" fill="#92400e" opacity="0.3"/>
+      <circle cx="118" cy="153" r="3.5" fill="#92400e" opacity="0.25"/>
+    </svg>
+
+    <div class="code" aria-hidden="true">500</div>
+    <h1>問題が発生しました</h1>
+    <p>一時的なエラーが発生しました。<br>お手数ですが、しばらく経ってからもう一度お試しください。</p>
+    <a href="/">トップページへ戻る</a>
   </div>
 </body>
 </html>

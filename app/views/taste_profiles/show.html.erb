@@ -17,6 +17,7 @@
   </h1>
 
   <div class="bg-white rounded-xl shadow-sm p-6 space-y-4">
+    <%= render "shared/illustrations/coffee_roast", roast: roast_key %>
     <div class="flex items-center justify-between gap-3">
       <p class="text-sm text-gray-600">
         <%= t(".diagnosed_on", date: l(@taste_profile.diagnosed_at.to_date, format: :long)) %>

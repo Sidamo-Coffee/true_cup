@@ -1,0 +1,31 @@
+<%
+  # roast: "light" | "medium" | "medium_dark" | "dark"
+  roast ||= "medium"
+  cup_color, rim_color, surface_color, handle_color = case roast.to_s
+    when "light"       then ["#fbbf24", "#f59e0b", "#d97706", "#d97706"]
+    when "medium"      then ["#d97706", "#b45309", "#92400e", "#b45309"]
+    when "medium_dark" then ["#b45309", "#92400e", "#78350f", "#92400e"]
+    when "dark"        then ["#78350f", "#451a03", "#1c1917", "#451a03"]
+    else                    ["#d97706", "#b45309", "#92400e", "#b45309"]
+  end
+%>
+<svg width="120" height="110" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+     class="mx-auto max-w-full h-auto" data-illustration="coffee-roast" data-roast="<%= roast %>">
+  <!-- Steam（焙煎度によらず湯気の色は固定。深煎りで煙のように見えるのを防ぐ） -->
+  <path d="M38 30 C37 22 40 16 38 8" stroke="#d97706" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+  <path d="M60 26 C59 18 62 12 60 4" stroke="#d97706" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+  <path d="M82 30 C81 22 84 16 82 8" stroke="#d97706" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- Cup body -->
+  <path d="M18 42 Q60 38 102 42 L92 90 Q60 94 28 90 Z" fill="<%= cup_color %>"/>
+  <!-- Cup rim -->
+  <rect x="15" y="35" width="90" height="11" rx="5" fill="<%= rim_color %>"/>
+  <!-- Coffee surface -->
+  <ellipse cx="60" cy="40" rx="42" ry="5.5" fill="<%= surface_color %>" opacity="0.7"/>
+
+  <!-- Handle -->
+  <path d="M93 53 Q112 53 112 66 Q112 79 93 79" stroke="<%= handle_color %>" stroke-width="9" fill="none" stroke-linecap="round"/>
+
+  <!-- Saucer -->
+  <ellipse cx="60" cy="93" rx="58" ry="8" fill="#fbbf24"/>
+</svg>

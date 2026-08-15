@@ -29,6 +29,7 @@
       <!-- ステップコンテンツ -->
       <% steps.each_with_index do |step, i| %>
         <div data-onboarding-target="step" class="<%= i == 0 ? '' : 'hidden' %> space-y-3 min-h-[120px]">
+          <%= render "shared/illustrations/coffee_step", step: i + 1 %>
           <p class="text-sm font-semibold text-amber-800"><%= step[:title] %></p>
           <p class="text-sm text-stone-700 leading-relaxed"><%= step[:body] %></p>
         </div>
