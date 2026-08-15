@@ -2,6 +2,9 @@
 require "rubygems"
 require "bundler/setup"
 
-ARGV.unshift("--ensure-latest")
+# --ensure-latest は「インストール済みバージョンが公開最新版でない」だけで
+# スキャンを実行せず終了コード5で失敗するため外している。
+# Brakeman が新版を出すたびに CI の scan_ruby が落ちる原因になっていた。
+# バージョン更新は Dependabot に任せる。
 
 load Gem.bin_path("brakeman", "brakeman")
