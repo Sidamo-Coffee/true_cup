@@ -22,6 +22,15 @@ RSpec.describe "StaticPages", type: :request do
     end
   end
 
+  # root と同じ static_pages#top を指す重複ルート。
+  # 生成時から残っているもので、削除するなら別途対応が必要。
+  describe "GET /static_pages/top" do
+    it "TOPページが表示されること" do
+      get static_pages_top_path
+      expect(response).to have_http_status(:success)
+    end
+  end
+
   describe "GET /terms" do
     it "利用規約が表示されること" do
       get terms_path
