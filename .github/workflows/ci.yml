@@ -71,6 +71,22 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: yarn
+
+      - name: Install JavaScript dependencies
+        run: yarn install --frozen-lockfile
+
+      # app/assets/builds/ は gitignore されているため、CI では明示的にビルドする。
+      # bin/rails test は Rake の test:prepare 経由で jsbundling/cssbundling の
+      # javascript:build / css:build を暗黙に実行していたが、rspec は Rake を
+      # 経由しないため、これが無いとレイアウト描画時に AssetNotFound になる。
+      - name: Build assets
+        run: yarn build && yarn build:css
+
       - name: Run tests
         env:
           RAILS_ENV: test
