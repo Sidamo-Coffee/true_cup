@@ -11,6 +11,13 @@ require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 require 'factory_bot_rails'
 require 'shoulda/matchers'
+
+# Rails 8.1 はルーティングを遅延読み込みするため、routes.rb が評価されるまで
+# Devise.mappings が空のままになる（マッピングは devise_for :users で登録される）。
+# HTTPリクエストより先に sign_in を呼ぶ spec が
+# 「Could not find a valid mapping for #<User ...>」で失敗するのを防ぐため、
+# スイート開始前にルートを読み込ませる。
+Rails.application.reload_routes_unless_loaded
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
 # run as spec files by default. This means that files in spec/support that end

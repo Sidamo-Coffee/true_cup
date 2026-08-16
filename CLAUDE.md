@@ -61,7 +61,7 @@ bin/rails db:test:prepare
 | 種類 | 採用技術 |
 | --- | --- |
 | フロントエンド | Tailwind CSS v4（`@tailwindcss/cli` でビルド）/ Hotwire（Turbo + Stimulus）/ Chartkick + Chart.js |
-| サーバーサイド | Ruby on Rails 7.2 |
+| サーバーサイド | Ruby on Rails 8.1 |
 | データベース | PostgreSQL |
 | 認証 | Devise（+ devise-i18n） |
 | ページネーション | Kaminari |
@@ -130,6 +130,11 @@ enum のラベルは各モデルの `*_label` メソッド（`place_label` な�
 ビューの検証で `coffee_name` など Faker 由来の文字列と本文を突き合わせるときは、
 `'` を含む値が HTML エスケープされるため `ERB::Util.html_escape` を通して比較する。
 
+`spec/rails_helper.rb` の冒頭で `Rails.application.reload_routes_unless_loaded` を呼んでいる。
+Rails 8.1 はルーティングを遅延読み込みするため、`routes.rb` の `devise_for :users` が評価される
+までは `Devise.mappings` が空で、HTTPリクエストより先に `sign_in` を呼ぶ spec が
+`Could not find a valid mapping for #<User ...>` で落ちる。これを防ぐためのもので、消してはいけない。
+
 ### CI
 
 GitHub Actionsで `scan_ruby`（Brakeman）/ `lint`（RuboCop）/ `test`（RSpec）の3ジョブを**並列**実行する（`needs:` による依存はない）。
@@ -142,7 +147,7 @@ GitHub Actionsで `scan_ruby`（Brakeman）/ `lint`（RuboCop）/ `test`（RSpec
 
 `bin/brakeman` からは `--ensure-latest` を外している（#99）。付いているとバージョン不一致だけで
 スキャンを実行せず失敗し、Brakeman が新版を出すたびに CI が落ちるため。
-Rails 7.2 の EOL 警告は `config/brakeman.ignore` で暫定的に抑制しており、#100 で解消する。
+Rails 7.2 の EOL 警告は #100 の Rails 8.1 アップグレードで解消したため、`config/brakeman.ignore` は削除済み。
 
 ## 開発フロー
 
