@@ -91,4 +91,87 @@ RSpec.describe RecommendedRoast do
       expect(result[:reason]).to eq "味覚診断ベース"
     end
   end
+
+  # ここから #118。信頼度をおすすめの根拠から導き、両者が食い違わないようにする
+  describe "おすすめの確からしさ" do
+    context "味覚診断を根拠にしている場合" do
+      before { create(:taste_profile, :dark_like, user: user) }
+
+      it "仮説として扱うこと" do
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:confidence]).to eq :hypothesis
+        expect(result[:notice]).to include "診断結果からの予想"
+      end
+
+      it "記録が焙煎度不明ばかりでも「安定している」と言わないこと" do
+        15.times { log(roast: :unknown, rating: 5) }
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:confidence]).to eq :hypothesis
+        expect(result[:notice]).not_to include "安定"
+      end
+    end
+
+    context "実データを根拠にしているが件数が少ない場合" do
+      before do
+        3.times { log(roast: :light, rating: 5) }
+        create(:taste_profile, :dark_like, user: user)
+      end
+
+      it "有力として扱い、暫定であることを伝えること" do
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:confidence]).to eq :likely
+        expect(result[:notice]).to include "記録3件"
+        expect(result[:notice]).to include "変わることがあります"
+      end
+
+      it "焙煎度不明の記録で件数を水増ししないこと" do
+        12.times { log(roast: :unknown, rating: 5) }
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:confidence]).to eq :likely
+        expect(result[:notice]).to include "記録3件"
+      end
+    end
+
+    context "実データを根拠にしていて件数も十分な場合" do
+      before do
+        described_class::STABLE_MIN.times { log(roast: :light, rating: 5) }
+        create(:taste_profile, :dark_like, user: user)
+      end
+
+      it "安定として扱うこと" do
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:confidence]).to eq :stable
+        expect(result[:notice]).to include "安定しています"
+      end
+    end
+
+    context "推薦できない場合" do
+      it "確からしさも返さないこと" do
+        result = call(taste_profile: nil)
+        expect(result[:confidence]).to be_nil
+        expect(result[:notice]).to be_nil
+      end
+    end
+
+    describe "おすすめの根拠と確からしさが食い違わないこと" do
+      # #118 で報告された矛盾の再現。根拠が実データなら「暫定」以上、
+      # 根拠が診断なら「安定」とは言わない、という関係が常に成り立つ
+      it "実データを根拠にしているとき、仮説とは言わないこと" do
+        5.times { log(roast: :dark, rating: 3) }
+        create(:taste_profile, :light_like, user: user)
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:reason]).to eq "全記録ベース"
+        expect(result[:confidence]).not_to eq :hypothesis
+      end
+
+      it "診断を根拠にしているとき、安定とは言わないこと" do
+        create(:taste_profile, :dark_like, user: user)
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:reason]).to eq "味覚診断ベース"
+        expect(result[:confidence]).not_to eq :stable
+      end
+    end
+  end
 end

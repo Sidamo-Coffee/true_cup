@@ -64,9 +64,14 @@ RSpec.describe "Preferences", type: :request do
           expect(response.body).not_to include(I18n.t("preferences.show.summary.suffix.all"))
         end
 
-        it "信頼度の注記は表示されること" do
+        it "焙煎度の傾向が出せない以上、おすすめが安定しているとは表示しないこと" do
+          create(:taste_profile, user: user)
           get preferences_path
-          expect(response.body).to include("記録数がまだ少ないため")
+
+          expect(response.body).to include(
+            I18n.t("services.recommended_roast.notice.hypothesis")
+          )
+          expect(response.body).not_to include("安定しています")
         end
       end
 
