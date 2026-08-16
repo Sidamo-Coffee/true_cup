@@ -41,3 +41,10 @@
 /vendor/bundle
 .DS_Store
 **/.DS_Store
+
+# Claude Code のローカル設定・作業用ワークツリー（リポジトリには含めない）
+/.claude/settings.local.json
+/.claude/worktrees/
+
+# Claude Code のコマンド一覧をまとめた個人メモ。アプリのコードとは無関係
+/docs/claude_code_skills.md
