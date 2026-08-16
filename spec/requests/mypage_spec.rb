@@ -34,6 +34,25 @@ RSpec.describe "Mypage", type: :request do
         expect(drawings.uniq.size).to eq(drawings.size)
       end
 
+      context "焙煎度が全て不明の記録しかない場合" do
+        before { 3.times { create(:coffee_log, user: user, roast_level: :unknown) } }
+
+        it "エラーにならず表示できること" do
+          get mypage_path
+          expect(response).to have_http_status(:success)
+        end
+
+        it "焙煎度を記録するよう促すメッセージが表示されること" do
+          get mypage_path
+          expect(response.body).to include(I18n.t("mypage.show.insights.unknown_roast_only"))
+        end
+
+        it "記録が1件もない旨のメッセージは表示しないこと" do
+          get mypage_path
+          expect(response.body).not_to include(I18n.t("mypage.show.insights.empty_all"))
+        end
+      end
+
       context "味覚診断が未実施の場合" do
         it "診断を促すメッセージが表示されること" do
           get mypage_path

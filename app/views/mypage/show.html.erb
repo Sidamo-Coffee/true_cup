@@ -121,22 +121,27 @@
           <p class="text-sm font-semibold text-gray-900 min-w-0"><%= t(".insights.all_title") %></p>
         </div>
 
-        <% if @preference_all[:available] %>
+        <% if @preference_all[:roast_available] %>
           <p class="text-base font-semibold text-amber-800">
             <%= t(".insights.summary_roast", roast: @preference_all[:summary_roast]) %>
           </p>
           <p class="text-xs text-gray-500">
-            <%= t(".insights.target_count", count: @preference_all[:logs_count]) %>
+            <%= t(".insights.target_count", count: @preference_all[:roast_logs_count]) %>
           </p>
 
           <div class="mt-2 w-full overflow-hidden min-w-0">
-            <%= pie_chart @preference_all[:roast_pie], 
-                  donut: true, 
-                  height: "180px", 
-                  width: "100%", 
-                  legend: false, 
+            <%= pie_chart @preference_all[:roast_pie],
+                  donut: true,
+                  height: "180px",
+                  width: "100%",
+                  legend: false,
                   library: { responsive: true, maintainAspectRatio: false } %>
           </div>
+        <% elsif @preference_all[:available] %>
+          <%# 記録はあるが、焙煎度が全て「不明」 %>
+          <p class="text-sm text-gray-600 leading-relaxed">
+            <%= t(".insights.unknown_roast_only") %>
+          </p>
         <% else %>
           <p class="text-sm text-gray-600 leading-relaxed">
             <%= t(".insights.empty_all") %>
@@ -153,21 +158,26 @@
           <p class="text-sm font-semibold text-gray-900 min-w-0"><%= t(".insights.liked_title") %></p>
         </div>
 
-        <% if @preference_liked[:available] %>
+        <% if @preference_liked[:roast_available] %>
           <p class="text-base font-semibold text-amber-800">
             <%= t(".insights.summary_roast", roast: @preference_liked[:summary_roast]) %>
           </p>
           <p class="text-xs text-gray-500">
-            <%= t(".insights.target_count", count: @preference_liked[:logs_count]) %>
+            <%= t(".insights.target_count", count: @preference_liked[:roast_logs_count]) %>
           </p>
           <div class="mt-2 w-full overflow-hidden min-w-0">
-            <%= pie_chart @preference_liked[:roast_pie], 
-            donut: true, 
-            height: "160px", 
-            width: "100%", 
+            <%= pie_chart @preference_liked[:roast_pie],
+            donut: true,
+            height: "160px",
+            width: "100%",
             legend: false,
             library: { responsive: true, maintainAspectRatio: false } %>
           </div>
+        <% elsif @preference_liked[:available] %>
+          <%# ★4以上の記録はあるが、焙煎度が全て「不明」 %>
+          <p class="text-sm text-gray-600 leading-relaxed">
+            <%= t(".insights.unknown_roast_only") %>
+          </p>
         <% else %>
           <p class="text-sm text-gray-600 leading-relaxed">
             <%= t(".insights.empty_liked") %>

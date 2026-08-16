@@ -9,24 +9,27 @@ class RecommendedRoast
   end
 
   def call
+    # 焙煎度が不明な記録は根拠にできないため、閾値の判定には roast_logs_count を使う。
+    # logs_count（不明を含む全件）で判定すると、不明な記録だけで閾値を満たしてしまう。
+
     # 1) ★4以上が十分あるなら最優先
-    if @liked[:available] && @liked[:logs_count].to_i >= MIN_LIKED
+    if @liked[:roast_available] && @liked[:roast_logs_count].to_i >= MIN_LIKED
       return build(
         roast_key: @liked[:summary_roast_key],
         label: @liked[:summary_roast],
         reason: "★4以上が最も多い",
-        n: @liked[:logs_count],
+        n: @liked[:roast_logs_count],
         message: "最近の「好き」から見ると、この焙煎度が合いやすいです。"
       )
     end
 
     # 2) 全記録が十分あるなら次点
-    if @all[:available] && @all[:logs_count].to_i >= MIN_ALL
+    if @all[:roast_available] && @all[:roast_logs_count].to_i >= MIN_ALL
       return build(
         roast_key: @all[:summary_roast_key],
         label: @all[:summary_roast],
         reason: "全記録ベース",
-        n: @all[:logs_count],
+        n: @all[:roast_logs_count],
         message: "記録全体の傾向から見ると、この焙煎度が選びやすいです。"
       )
     end

@@ -22,30 +22,47 @@
       <%= t(".empty") %>
     </div>
   <% else %>
-    <!-- サマリー -->
-    <div class="rounded-xl border bg-white p-6 shadow-sm space-y-2">
-      <% summary_suffix_key = (@scope == "liked") ? "liked" : "all" %>
-      <p class="text-lg font-semibold text-amber-800">
-        <%= t(".summary.text", roast: @preference[:summary_roast], suffix: t(".summary.suffix.#{summary_suffix_key}")) %>
-      </p>
+    <%# サマリー。焙煎度の傾向が出せない場合は見出しが無く空箱になるため、カードごと省く %>
+    <% if @preference[:roast_available] %>
+      <div class="rounded-xl border bg-white p-6 shadow-sm space-y-2">
+        <% summary_suffix_key = (@scope == "liked") ? "liked" : "all" %>
+        <p class="text-lg font-semibold text-amber-800">
+          <%= t(".summary.text", roast: @preference[:summary_roast], suffix: t(".summary.suffix.#{summary_suffix_key}")) %>
+        </p>
 
-      <p class="text-sm text-gray-600">
-        <%= @preference[:reason] %>
-      </p>
+        <p class="text-sm text-gray-600">
+          <%= @preference[:reason] %>
+        </p>
 
-      <p class="text-xs text-gray-500">
-        <%= @preference[:notice] %>
-      </p>
-    </div>
+        <p class="text-xs text-gray-500">
+          <%= @preference[:notice] %>
+        </p>
+      </div>
+    <% end %>
 
     <div class="grid md:grid-cols-2 gap-6">
       <!-- 焙煎度（円グラフ） -->
       <div class="rounded-xl border bg-white p-6 shadow-sm wrapper w-full overflow-hidden">
         <h2 class="text-lg font-semibold mb-1"><%= t(".charts.roast.title") %></h2>
-        <p class="text-xs text-gray-500 mb-3"><%= @preference[:charts_reason] %></p>
-        <%= pie_chart @preference[:roast_pie], donut: true, legend: "bottom", height: "260px", width: "100%",
-                      library: { responsive: true, maintainAspectRatio: false,
-                                 animation: { duration: 800, easing: "easeInOutQuart" } } %>
+        <% if @preference[:roast_available] %>
+          <p class="text-xs text-gray-500 mb-3"><%= @preference[:charts_reason] %></p>
+          <%= pie_chart @preference[:roast_pie], donut: true, legend: "bottom", height: "260px", width: "100%",
+                        library: { responsive: true, maintainAspectRatio: false,
+                                   animation: { duration: 800, easing: "easeInOutQuart" } } %>
+          <% if @preference[:unknown_roast_count].to_i.positive? %>
+            <p class="text-xs text-gray-500 mt-3">
+              <%= t(".charts.roast.unknown_note", count: @preference[:unknown_roast_count]) %>
+            </p>
+          <% end %>
+        <% else %>
+          <%# 焙煎度を記録した分が0件。味の傾向は右側に表示されている %>
+          <div class="py-8 text-center">
+            <%= render "shared/illustrations/coffee_empty" %>
+            <p class="text-sm text-gray-600 mt-4 leading-relaxed">
+              <%= t(".charts.roast.unknown_only") %>
+            </p>
+          </div>
+        <% end %>
       </div>
 
       <!-- 味（棒グラフ） -->
@@ -58,7 +75,8 @@
       </div>
     </div>
 
-    <!-- Top3ランキング -->
+    <!-- Top3ランキング（焙煎度の集計なので、記録がある場合のみ） -->
+    <% if @preference[:roast_available] %>
     <div class="rounded-xl border bg-white p-6 shadow-sm">
       <h2 class="text-lg font-semibold mb-4"><%= t(".ranking.title") %></h2>
 
@@ -80,5 +98,11 @@
         <%= t(".ranking.note") %>
       </p>
     </div>
+    <% else %>
+      <%# サマリーカードを出していないぶん、信頼度の注記はここで伝える %>
+      <p class="text-xs text-gray-500 leading-relaxed">
+        <%= @preference[:notice] %>
+      </p>
+    <% end %>
   <% end %>
 </div>
