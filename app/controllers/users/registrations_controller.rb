@@ -3,7 +3,10 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   # before_action :configure_sign_up_params, only: [:create]
   # before_action :configure_account_update_params, only: [:update]
-  before_action :authenticate_user!, only: [ :confirm_deletion ]
+  # devise コントローラー内では authenticate_user! が force オプションなしでは素通りするため、
+  # Devise 標準の authenticate_scope!（内部で force: true を渡す）で保護する。
+  # 同名コールバックの再宣言は既存の条件を置き換えるため、Devise 既定の対象アクションもここに含めること。
+  prepend_before_action :authenticate_scope!, only: [ :edit, :update, :destroy, :confirm_deletion ]
 
   def confirm_deletion
     @user = current_user

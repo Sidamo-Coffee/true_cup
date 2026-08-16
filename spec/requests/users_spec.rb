@@ -90,6 +90,40 @@ RSpec.describe "Users", type: :request do
     end
   end
 
+  # confirm_deletion の保護のために authenticate_scope! を再宣言しており、
+  # 同名コールバックの再宣言は Devise 既定の条件を置き換える。
+  # edit / update の保護が落ちていないことをここで担保する。
+  describe "アカウント編集" do
+    let(:user) { create(:user) }
+
+    describe "GET /users/edit" do
+      context "ログインしていない場合" do
+        it "ログインページにリダイレクトされること" do
+          get edit_user_registration_path
+          expect(response).to redirect_to(new_user_session_path)
+        end
+      end
+
+      context "ログインしている場合" do
+        before { sign_in user }
+
+        it "編集ページが表示されること" do
+          get edit_user_registration_path
+          expect(response).to have_http_status(:success)
+        end
+      end
+    end
+
+    describe "PATCH /users" do
+      context "ログインしていない場合" do
+        it "ログインページにリダイレクトされること" do
+          patch user_registration_path, params: { user: { name: "改名" } }
+          expect(response).to redirect_to(new_user_session_path)
+        end
+      end
+    end
+  end
+
   describe "アカウント削除" do
     let(:user) { create(:user) }
 
