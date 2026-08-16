@@ -19,8 +19,15 @@ RSpec.describe "CoffeeLogs", type: :request do
       it "記録が表示されること" do
         get coffee_logs_path
         user.coffee_logs.each do |log|
-          expect(response.body).to include(log.coffee_name)
+          expect(response.body).to include(ERB::Util.html_escape(log.coffee_name))
         end
+      end
+    end
+
+    context "記録が1件もない場合" do
+      it "空状態のイラストが表示されること" do
+        get coffee_logs_path
+        expect(response.body).to include('data-illustration="coffee-empty"')
       end
     end
 
@@ -42,7 +49,22 @@ RSpec.describe "CoffeeLogs", type: :request do
     it "記録詳細ページが表示されること" do
       get coffee_log_path(coffee_log)
       expect(response).to have_http_status(:success)
-      expect(response.body).to include(coffee_log.coffee_name)
+      expect(response.body).to include(ERB::Util.html_escape(coffee_log.coffee_name))
+    end
+
+    it "焙煎度に対応したコーヒー豆アイコンが表示されること" do
+      get coffee_log_path(coffee_log)
+      expect(response.body).to include('data-illustration="coffee-bean"')
+      expect(response.body).to include('data-roast="medium"')
+    end
+
+    context "焙煎度が深煎りの記録の場合" do
+      let(:coffee_log) { create(:coffee_log, :dark_roast, user: user) }
+
+      it "深煎り用のアイコンが表示されること" do
+        get coffee_log_path(coffee_log)
+        expect(response.body).to include('data-roast="dark"')
+      end
     end
   end
 

@@ -20,6 +20,20 @@ RSpec.describe "Mypage", type: :request do
         expect(response.body).to include("マイページ")
       end
 
+      it "挨拶の横にコーヒーアイコンが表示されること" do
+        get mypage_path
+        expect(response.body).to include('data-illustration="coffee-icon"')
+      end
+
+      it "オンボーディングの各ステップに異なるイラストが表示されること" do
+        get mypage_path
+
+        # data-step 属性は必ず異なるため、SVGの中身（描画内容）だけを比較する
+        drawings = response.body.scan(%r{<svg[^>]*data-illustration="coffee-step"[^>]*>(.*?)</svg>}m).flatten
+        expect(drawings.size).to eq(I18n.t("shared.onboarding_modal.steps").size)
+        expect(drawings.uniq.size).to eq(drawings.size)
+      end
+
       context "味覚診断が未実施の場合" do
         it "診断を促すメッセージが表示されること" do
           get mypage_path
@@ -41,7 +55,7 @@ RSpec.describe "Mypage", type: :request do
 
         it "最新の記録が表示されること" do
           get mypage_path
-          expect(response.body).to include(user.coffee_logs.first.coffee_name)
+          expect(response.body).to include(ERB::Util.html_escape(user.coffee_logs.first.coffee_name))
         end
       end
     end

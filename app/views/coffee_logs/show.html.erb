@@ -35,7 +35,10 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
       <div class="p-4 rounded border">
         <p class="text-gray-500"><%= t(".labels.roast_level") %></p>
-        <p class="font-semibold"><%= @coffee_log.roast_level_label %></p>
+        <p class="font-semibold flex items-center gap-2">
+          <%= render "shared/illustrations/coffee_bean", roast: @coffee_log.roast_level %>
+          <%= @coffee_log.roast_level_label %>
+        </p>
       </div>
       <div class="p-4 rounded border">
         <p class="text-gray-500"><%= t(".labels.rating") %></p>

@@ -1,0 +1,18 @@
+<%
+  # roast: "unknown" | "light" | "medium" | "medium_dark" | "dark"
+  roast ||= "unknown"
+  bean_color, crack_color = case roast.to_s
+  when "light"       then [ "#fbbf24", "#d97706" ]
+  when "medium"      then [ "#d97706", "#92400e" ]
+  when "medium_dark" then [ "#b45309", "#78350f" ]
+  when "dark"        then [ "#78350f", "#292524" ]
+  else                    [ "#d6d3d1", "#a8a29e" ]
+  end
+%>
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="shrink-0"
+     data-illustration="coffee-bean" data-roast="<%= roast %>">
+  <g transform="rotate(-35 16 16)">
+    <ellipse cx="16" cy="16" rx="13" ry="9" fill="<%= bean_color %>"/>
+    <path d="M5 16 Q10.5 20 16 16 T27 16" stroke="<%= crack_color %>" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>
