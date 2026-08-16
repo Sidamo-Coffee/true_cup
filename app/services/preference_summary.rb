@@ -24,19 +24,8 @@ class PreferenceSummary
     roast_logs_count = logs_with_roast.count
     unknown_roast_count = logs_count - roast_logs_count
 
-    # 信頼度（全期間ベース：表示メッセージ用）
-    base = @user.coffee_logs
-    total_count = base.count
-    liked_count = base.where("overall_rating >= ?", 4).count
-
-    confidence, notice =
-      if total_count < 10 || liked_count < 5
-        [ :low, "記録数がまだ少ないため、傾向は暫定です。記録が増えるにつれて精度が上がります。" ]
-      elsif total_count < 15
-        [ :mid, "記録が増えてきましたね。記録を重ねるほど好みがはっきりしてきます。" ]
-      else
-        [ :high, "十分な記録があるため、傾向は比較的安定しています。" ]
-      end
+    # 確からしさは RecommendedRoast が「おすすめの根拠」から導く（#118）。
+    # ここで独立に算出すると、おすすめの表示と食い違うため持たせない。
 
     # 焙煎度：件数ベース（分かりやすさ優先）。不明は「好みの焙煎度」ではないため集計対象外。
     roast_counts = logs_with_roast.group(:roast_level).count
@@ -88,12 +77,7 @@ class PreferenceSummary
       summary_roast: summary_label,
       summary_roast_key: summary_key,
       reason: summary_reason(roast_logs_count),
-      charts_reason: scope_reason,
-
-      total_count: total_count,
-      liked_count: liked_count,
-      confidence: confidence,
-      notice: notice
+      charts_reason: scope_reason
     }
   end
 

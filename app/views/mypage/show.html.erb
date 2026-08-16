@@ -186,10 +186,10 @@
       </div>
     </div>
 
-    <%# 補足メッセージ %>
-    <% if @preference_all[:available] %>
+    <%# 補足メッセージ（おすすめの確からしさ） %>
+    <% if @recommended_roast[:notice].present? %>
       <p class="text-xs text-gray-500 mt-4 leading-relaxed">
-        <%= @preference_all[:notice] %>
+        <%= @recommended_roast[:notice] %>
       </p>
     <% end %>
   </section>

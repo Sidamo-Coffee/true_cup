@@ -34,9 +34,11 @@
           <%= @preference[:reason] %>
         </p>
 
-        <p class="text-xs text-gray-500">
-          <%= @preference[:notice] %>
-        </p>
+        <% if @recommended_roast[:notice].present? %>
+          <p class="text-xs text-gray-500">
+            <%= @recommended_roast[:notice] %>
+          </p>
+        <% end %>
       </div>
     <% end %>
 
@@ -98,10 +100,10 @@
         <%= t(".ranking.note") %>
       </p>
     </div>
-    <% else %>
-      <%# サマリーカードを出していないぶん、信頼度の注記はここで伝える %>
+    <% elsif @recommended_roast[:notice].present? %>
+      <%# サマリーカードを出していないぶん、おすすめの確からしさはここで伝える %>
       <p class="text-xs text-gray-500 leading-relaxed">
-        <%= @preference[:notice] %>
+        <%= @recommended_roast[:notice] %>
       </p>
     <% end %>
   <% end %>

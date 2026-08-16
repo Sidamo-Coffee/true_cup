@@ -72,11 +72,6 @@ RSpec.describe PreferenceSummary do
         expect(result[:roast_logs_count]).to eq 0
         expect(result[:summary_roast_key]).to be_nil
       end
-
-      it "信頼度が算出されること" do
-        result = described_class.new(user).call
-        expect(result[:confidence]).not_to be_nil
-      end
     end
 
     context "焙煎度が既知の記録と不明の記録が混在する場合" do
@@ -123,20 +118,15 @@ RSpec.describe PreferenceSummary do
     end
   end
 
-  describe "信頼度" do
-    it "記録が少なければ low になること" do
-      3.times { log(roast: :light, rating: 5) }
-      expect(described_class.new(user).call[:confidence]).to eq :low
-    end
-
-    it "記録が十分にあれば high になること" do
+  describe "確からしさ" do
+    # #118 で RecommendedRoast へ移した。ここで独立に算出すると
+    # おすすめの表示と食い違うため、集計側は持たない
+    it "集計結果としては返さないこと" do
       15.times { log(roast: :light, rating: 5) }
-      expect(described_class.new(user).call[:confidence]).to eq :high
-    end
+      result = described_class.new(user).call
 
-    it "焙煎度が不明な記録も件数に算入すること" do
-      15.times { log(roast: :unknown, rating: 5) }
-      expect(described_class.new(user).call[:confidence]).to eq :high
+      expect(result).not_to have_key(:confidence)
+      expect(result).not_to have_key(:notice)
     end
   end
 end
