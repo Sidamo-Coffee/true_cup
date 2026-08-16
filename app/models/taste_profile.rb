@@ -1,7 +1,7 @@
 class TasteProfile < ApplicationRecord
   belongs_to :user
 
-  enum preferred_roast: {
+  enum :preferred_roast, {
     light: 0,        # 浅煎りタイプ
     medium: 1,       # 中煎りタイプ
     medium_dark: 2,  # 中深煎りタイプ
@@ -9,7 +9,7 @@ class TasteProfile < ApplicationRecord
   }
 
   # 味覚タイプ（MVPでは preferred_roast とほぼ同義でOK）
-  enum taste_type: {
+  enum :taste_type, {
     light_like: 0,
     medium_like: 1,
     medium_dark_like: 2,
