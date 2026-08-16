@@ -113,6 +113,13 @@ RSpec.describe PreferenceSummary do
         result = described_class.new(user).call
         expect(result[:unknown_roast_count]).to eq 2
       end
+
+      it "サマリーの説明文が、焙煎度を記録した件数を指していると分かること" do
+        result = described_class.new(user).call
+        # 全記録は5件だが、焙煎度の集計対象は3件。「全記録（3件）」では矛盾する
+        expect(result[:reason]).to include "焙煎度を記録した3件"
+        expect(result[:reason]).not_to include "全記録"
+      end
     end
   end
 

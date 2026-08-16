@@ -57,6 +57,17 @@ RSpec.describe "Preferences", type: :request do
           get preferences_path
           expect(response.body).not_to include(I18n.t("preferences.show.ranking.title"))
         end
+
+        it "サマリーの見出しは表示しないこと" do
+          # 焙煎度が決まらないため見出しを出せない。空のカードを残さない
+          get preferences_path
+          expect(response.body).not_to include(I18n.t("preferences.show.summary.suffix.all"))
+        end
+
+        it "信頼度の注記は表示されること" do
+          get preferences_path
+          expect(response.body).to include("記録数がまだ少ないため")
+        end
       end
 
       context "焙煎度が既知の記録と不明の記録が混在する場合" do

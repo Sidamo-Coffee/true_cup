@@ -119,21 +119,23 @@ class PreferenceSummary
     end
   end
 
+  # 焙煎度の集計は「不明」を除いた分が対象。全記録と件数が食い違うため、
+  # 「全記録」ではなく「焙煎度を記録した分」であることを明示する。
   def scope_reason
     case @scope
     when :liked
-      "★4以上の評価をした記録を、件数で集計しています。"
+      "★4以上の評価をした記録のうち、焙煎度を記録した分を件数で集計しています。"
     else
-      "全記録を、件数で集計しています。"
+      "焙煎度を記録した分を、件数で集計しています。"
     end
   end
 
-  def summary_reason(logs_count)
+  def summary_reason(roast_logs_count)
     case @scope
     when :liked
-      "★4以上の評価をした記録（全#{logs_count}件）の中で、最も飲まれている焙煎度です。"
+      "★4以上の評価をした記録のうち、焙煎度を記録した#{roast_logs_count}件の中で最も飲まれている焙煎度です。"
     else
-      "全記録（#{logs_count}件）の中で、最も飲まれている焙煎度です。"
+      "焙煎度を記録した#{roast_logs_count}件の中で、最も飲まれている焙煎度です。"
     end
   end
 
