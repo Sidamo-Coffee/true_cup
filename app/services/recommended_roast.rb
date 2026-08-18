@@ -69,7 +69,7 @@ class RecommendedRoast
       )
     end
 
-    { available: false, confidence: nil, notice: nil }
+    { available: false, confidence: nil, notice: nil, progress: nil }
   end
 
   private
@@ -86,7 +86,41 @@ class RecommendedRoast
       n: n,
       message: message,
       confidence: level,
-      notice: I18n.t("services.recommended_roast.notice.#{notice_key}", count: n.to_i)
+      notice: I18n.t("services.recommended_roast.notice.#{notice_key}", count: n.to_i),
+      progress: progress_for(level, n.to_i, low_rated)
+    }
+  end
+
+  # 次の段階までの進み具合。
+  # 記録を増やせば段階が進む状況でのみ返す。件数以外が理由で止まっている場合に
+  # 「あとN件」と言うと、記録しても進まないという誤った期待を持たせるため。
+  def progress_for(level, n, low_rated)
+    case level
+    when :stable
+      build_progress(stage: :stable, current: n, target: STABLE_MIN)
+    when :likely
+      build_progress(stage: :likely, current: n, target: STABLE_MIN)
+    when :hypothesis
+      return nil if low_rated                      # 低評価が理由。件数では進まない
+      return nil unless countable_toward_logs?     # 焙煎度が未記録。件数では進まない
+
+      build_progress(stage: :hypothesis, current: @liked[:roast_logs_count].to_i, target: MIN_LIKED)
+    end
+  end
+
+  # 焙煎度を記録した★4以上の記録が積み上がっているか。
+  # 記録はあるのに焙煎度が全て不明なら、増やしても実データには切り替わらない。
+  def countable_toward_logs?
+    @liked[:logs_count].to_i.zero? || @liked[:roast_available]
+  end
+
+  def build_progress(stage:, current:, target:)
+    {
+      stage: stage,
+      current: current,
+      target: target,
+      remaining: [ target - current, 0 ].max,
+      percent: [ [ (current.to_f / target * 100).round, 0 ].max, 100 ].min
     }
   end
 
