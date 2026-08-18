@@ -77,6 +77,10 @@
       </div>
     </div>
 
+    <% if @diagnosis_gap[:available] %>
+      <%= render "diagnosis_gap", gap: @diagnosis_gap %>
+    <% end %>
+
     <!-- Top3ランキング（焙煎度の集計なので、記録がある場合のみ） -->
     <% if @preference[:roast_available] %>
     <div class="rounded-xl border bg-white p-6 shadow-sm">

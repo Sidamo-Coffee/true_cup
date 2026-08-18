@@ -273,6 +273,26 @@ ja:
         stable: "記録%{count}件をもとにしており、傾向は安定しています。"
   preferences:
     show:
+      # 診断（仮説）と★4以上の記録（実測）のズレ（#120）
+      gap:
+        title: "診断と、実際の記録"
+        lead_diverged: "診断では「%{diagnosed}」でしたが、あなたが高く評価した記録を見ると「%{actual}」が合っているようです。"
+        lead_aligned: "診断は「%{diagnosed}」。高く評価した記録もその傾向で、診断どおりの好みのようです。"
+        lead_taste_only_diverged: "高く評価した記録を見ると、診断とは少し違う好みが見えてきています。"
+        lead_taste_only_aligned: "高く評価した記録は、診断の傾向とおおむね一致しています。"
+        based_on: "★4以上をつけた%{count}件をもとにしています。"
+        axis:
+          bitterness: "苦味"
+          acidity: "酸味"
+        column:
+          diagnosed: "診断"
+          actual: "実際"
+        direction:
+          higher: "診断より強めが好き"
+          lower: "診断より控えめが好き"
+          same: "診断とほぼ同じ"
+        rediagnose: "もう一度診断する"
+        rediagnose_note: "好みは変わることがあります。しっくりこなければ診断し直せます。"
       title:
         all: "よく飲んでいる傾向"
         liked: "好みの傾向"
