@@ -4,7 +4,8 @@
 
   <p class="text-sm text-gray-700 leading-relaxed">
     <% if gap[:roast].present? %>
-      <%= t("preferences.show.gap.#{gap[:verdict] == :diverged ? 'lead_diverged' : 'lead_aligned'}",
+      <%# 味だけズレている場合に「診断ではAでしたが実際もA」とならないよう、焙煎度の一致で分岐する %>
+      <%= t("preferences.show.gap.#{gap[:roast][:match] ? 'lead_aligned' : 'lead_diverged'}",
             diagnosed: gap[:roast][:diagnosed_label], actual: gap[:roast][:actual_label]) %>
     <% else %>
       <%# 焙煎度が不明な記録ばかりの場合は味だけで語る %>
@@ -33,7 +34,7 @@
           <% [[:diagnosed, axis[:diagnosed], "bg-stone-400"],
               [:actual,    axis[:actual],    "bg-amber-600"]].each do |label_key, value, bar_color| %>
             <div class="flex items-center gap-3">
-              <span class="w-10 shrink-0 text-xs text-gray-500">
+              <span class="w-14 shrink-0 text-xs text-gray-500">
                 <%= t("preferences.show.gap.column.#{label_key}") %>
               </span>
               <div class="h-2 flex-1 overflow-hidden rounded-full bg-stone-100">

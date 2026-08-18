@@ -65,9 +65,35 @@ RSpec.describe DiagnosisGap do
       expect(call[:roast]).to be_nil
     end
 
-    it "おすすめが示す焙煎度と一致すること" do
-      # 画面間で矛盾しないよう、おすすめと同じ値を使う
+    it "焙煎度を記録した分が閾値に満たなければ、焙煎度は比較しないこと" do
+      # ★4以上は3件あるが、焙煎度が既知なのは1件だけ。
+      # これで断言すると、おすすめ（診断ベースのまま）と食い違う
+      1.times { log(roast: :dark,    rating: 5) }
+      2.times { log(roast: :unknown, rating: 5) }
+
+      expect(call[:available]).to be true   # 味の比較は成り立つ
+      expect(call[:roast]).to be_nil        # 焙煎度は語らない
+    end
+
+    it "焙煎度を語る場合は、おすすめも実データを根拠にしていること" do
+      # 片方だけが実データを根拠にすると画面間で矛盾する
       3.times { log(roast: :dark, rating: 5) }
+      liked = PreferenceSummary.new(user, scope: :liked).call
+      recommended = RecommendedRoast.new(
+        preference_liked: liked,
+        preference_all: PreferenceSummary.new(user, scope: :all).call,
+        taste_profile: user.reload.taste_profile
+      ).call
+
+      expect(call[:roast]).to be_present
+      expect(recommended[:reason]).not_to eq I18n.t("services.recommended_roast.reason.diagnosis")
+    end
+
+    it "おすすめが示す焙煎度と一致すること" do
+      # 画面間で矛盾しないよう、おすすめと同じ値を使う。
+      # 件数最多（中煎り3件）と評価最高（深煎り★5）がずれるデータで検証する
+      3.times { log(roast: :medium, rating: 4) }
+      2.times { log(roast: :dark,   rating: 5) }
       liked = PreferenceSummary.new(user, scope: :liked).call
       recommended = RecommendedRoast.new(
         preference_liked: liked,
@@ -105,6 +131,15 @@ RSpec.describe DiagnosisGap do
       expect(bitterness[:direction]).to eq :lower
     end
 
+    it "差が無ければ direction が same になること" do
+      create(:taste_profile, user: user,
+                             bitterness_score: 5, acidity_score: 5,
+                             sweetness_score: 5, body_score: 5)
+      3.times { log(roast: :dark, rating: 5, bitterness: 1, acidity: 1) }
+
+      expect(call[:axes].map { |a| a[:direction] }).to all(eq :same)
+    end
+
     it "コクと甘みは比較しないこと" do
       # 記録側で収集していないため（コク）、診断側が固定値のため（甘み）
       create(:taste_profile, user: user)
@@ -125,9 +160,13 @@ RSpec.describe DiagnosisGap do
     end
 
     it "焙煎度が違えばズレと判定すること" do
-      create(:taste_profile, :light_like, user: user)
+      # 味は一致させ、焙煎度の違いだけで判定されることを確かめる
+      create(:taste_profile, user: user, preferred_roast: :light,
+                             bitterness_score: 5, acidity_score: 5,
+                             sweetness_score: 5, body_score: 5)
       3.times { log(roast: :dark, rating: 5, bitterness: 1, acidity: 1) }
 
+      expect(call[:axes].map { |a| a[:large] }).to all(be false)
       expect(call[:verdict]).to eq :diverged
     end
 

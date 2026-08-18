@@ -43,16 +43,25 @@ class DiagnosisGap
     { available: false, roast: nil, axes: [], verdict: nil }
   end
 
+  # 味の比較は焙煎度が不明でも成り立つため logs_count で判定する。
   def comparable?
     @taste_profile.present? &&
       @liked[:available] &&
       @liked[:logs_count].to_i >= MIN_LOGS
   end
 
+  # 焙煎度の比較だけは、おすすめと同じ roast_logs_count で判定する。
+  # logs_count（不明を含む）で判定すると、焙煎度既知が1件でも
+  # 「実際は深煎り」と断言してしまい、おすすめの表示と食い違う（#120 レビュー指摘）。
+  def roast_comparable?
+    @liked[:roast_available] && @liked[:roast_logs_count].to_i >= MIN_LOGS
+  end
+
   def build_axes
     AXES.map do |key, conf|
       diagnosed = @taste_profile.public_send(conf[:score]).to_f
-      actual    = @liked[:taste_bar][conf[:bar]].to_f
+      # キーが変わったら静かに 0.0 になり「大きなズレ」と誤表示するため fetch で落とす
+      actual    = @liked[:taste_bar].fetch(conf[:bar]).to_f
       diff      = (actual - diagnosed).round(1)
 
       {
@@ -60,16 +69,22 @@ class DiagnosisGap
         diagnosed: diagnosed,
         actual: actual,
         diff: diff.abs,
-        direction: diff.positive? ? :higher : :lower,
+        direction: direction_of(diff),
         large: diff.abs >= LARGE_GAP
       }
     end
   end
 
+  def direction_of(diff)
+    return :same if diff.zero?
+
+    diff.positive? ? :higher : :lower
+  end
+
   # 実際の好みは、おすすめが示すものと同じ値を使う。
   # ここで別の選び方をすると、同じ画面内で違う焙煎度を提示することになる。
   def build_roast
-    return nil unless @liked[:roast_available]
+    return nil unless roast_comparable?
 
     diagnosed_key = @taste_profile.preferred_roast.to_s
     actual_key    = @liked[:top_rated_roast_key].to_s

@@ -63,6 +63,34 @@ RSpec.describe "Preferences", type: :request do
         end
       end
 
+      context "焙煎度は診断どおりだが、味だけがズレている場合" do
+        before do
+          create(:taste_profile, user: user, preferred_roast: :dark,
+                                 bitterness_score: 1, acidity_score: 5,
+                                 sweetness_score: 5, body_score: 5)
+          3.times { create(:coffee_log, :dark_roast, user: user, overall_rating: 5) }
+        end
+
+        it "「診断ではAでしたが実際もA」という破綻した文を出さないこと" do
+          get preferences_path
+          expect(response.body).to include(
+            ERB::Util.html_escape(
+              I18n.t("preferences.show.gap.lead_aligned", diagnosed: "深煎り", actual: "深煎り")
+            )
+          )
+          expect(response.body).not_to include(
+            ERB::Util.html_escape(
+              I18n.t("preferences.show.gap.lead_diverged", diagnosed: "深煎り", actual: "深煎り")
+            )
+          )
+        end
+
+        it "味のズレは伝わること" do
+          get preferences_path
+          expect(response.body).to include(I18n.t("preferences.show.gap.direction.higher"))
+        end
+      end
+
       context "診断はあるが★4以上の記録が少ない場合" do
         before do
           create(:taste_profile, :light_like, user: user)
