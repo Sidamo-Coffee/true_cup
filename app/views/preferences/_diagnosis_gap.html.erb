@@ -16,8 +16,9 @@
   <div class="space-y-3">
     <% gap[:axes].each do |axis| %>
       <div class="rounded-lg border p-4">
-        <div class="flex items-baseline justify-between gap-3">
-          <p class="text-sm font-semibold text-gray-900">
+        <%# 狭い幅では説明文に押されて軸名が1文字ずつ折り返すため、縦に積む %>
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
+          <p class="shrink-0 text-sm font-semibold text-gray-900">
             <%= t("preferences.show.gap.axis.#{axis[:key]}") %>
           </p>
           <p class="text-xs <%= axis[:large] ? 'text-amber-800 font-semibold' : 'text-gray-500' %>">
