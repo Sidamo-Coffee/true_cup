@@ -40,11 +40,14 @@
           </p>
         <% end %>
 
-        <% if @recommended_roast[:progress].present? %>
-          <div class="pt-2">
-            <%= render "shared/recommendation_progress", progress: @recommended_roast[:progress] %>
-          </div>
-        <% end %>
+      </div>
+    <% end %>
+
+    <%# 進捗はサマリーカードの有無に関わらず出す。カード内に置くと、
+        焙煎度の傾向が出せない状態のときだけ進捗も消えてしまう %>
+    <% if @recommended_roast[:progress].present? %>
+      <div class="rounded-xl border bg-white p-6 shadow-sm">
+        <%= render "shared/recommendation_progress", progress: @recommended_roast[:progress] %>
       </div>
     <% end %>
 

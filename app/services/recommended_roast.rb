@@ -87,45 +87,47 @@ class RecommendedRoast
       message: message,
       confidence: level,
       notice: I18n.t("services.recommended_roast.notice.#{notice_key}", count: n.to_i),
-      progress: progress_for(level, n.to_i, low_rated)
+      progress: progress_for(level, low_rated)
     }
   end
 
   # 次の段階までの進み具合。
+  #
+  # 分子には「焙煎度を記録した全記録数」を使う。おすすめの根拠は★4以上と全記録で
+  # 切り替わるため、根拠になった件数を分子にすると意味が変わって値が後退する。
+  # 「記録するほど進む」を見せる機能なので、単調に増える量でなければならない。
+  #
   # 記録を増やせば段階が進む状況でのみ返す。件数以外が理由で止まっている場合に
   # 「あとN件」と言うと、記録しても進まないという誤った期待を持たせるため。
-  def progress_for(level, n, low_rated)
-    case level
-    when :stable
-      build_progress(stage: :stable, current: n, target: STABLE_MIN)
-    when :likely
-      build_progress(stage: :likely, current: n, target: STABLE_MIN)
-    when :hypothesis
-      return nil if low_rated                      # 低評価が理由。件数では進まない
-      return nil unless countable_toward_logs?     # 焙煎度が未記録。件数では進まない
+  def progress_for(level, low_rated)
+    return nil if low_rated                # 低評価が理由。件数では進まない
+    return nil unless roast_recorded?      # 焙煎度が未記録。件数では進まない
 
-      build_progress(stage: :hypothesis, current: @liked[:roast_logs_count].to_i, target: MIN_LIKED)
-    end
+    recorded = @all[:roast_logs_count].to_i
+    target   = (level == :hypothesis) ? MIN_ALL : STABLE_MIN
+
+    build_progress(stage: level, current: recorded, target: target)
   end
 
-  # 焙煎度を記録した★4以上の記録が積み上がっているか。
-  # 記録はあるのに焙煎度が全て不明なら、増やしても実データには切り替わらない。
-  def countable_toward_logs?
-    @liked[:logs_count].to_i.zero? || @liked[:roast_available]
+  # 焙煎度を記録した分が積み上がっているか。
+  # 記録はあるのに焙煎度が全て不明なら、件数を増やしても実データには切り替わらない。
+  # 記録が1件も無い場合は、これから積み上がるため進捗を出してよい。
+  def roast_recorded?
+    @all[:logs_count].to_i.zero? || @all[:roast_logs_count].to_i.positive?
   end
 
   def build_progress(stage:, current:, target:)
+    capped = current.clamp(0, target)
+
     {
       stage: stage,
-      current: current,
+      current: capped,
       target: target,
-      remaining: [ target - current, 0 ].max,
-      percent: [ [ (current.to_f / target * 100).round, 0 ].max, 100 ].min
+      remaining: target - capped,
+      percent: (capped.to_f / target * 100).round
     }
   end
 
-  # 確からしさは「何を根拠にしたか」と「その裏付け件数」だけで決まる。
-  # おすすめと同じ数字を見て決めるため、両者が食い違うことがない（#118）。
   def confidence_level(from_logs, n)
     return :hypothesis unless from_logs
 
