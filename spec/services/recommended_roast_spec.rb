@@ -25,7 +25,7 @@ RSpec.describe RecommendedRoast do
       it "★4以上の記録を根拠にすること" do
         result = call(taste_profile: user.reload.taste_profile)
         expect(result[:roast_key]).to eq "light"
-        expect(result[:reason]).to eq "★4以上が最も多い"
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.liked")
       end
     end
 
@@ -38,7 +38,7 @@ RSpec.describe RecommendedRoast do
       it "全記録を根拠にすること" do
         result = call(taste_profile: user.reload.taste_profile)
         expect(result[:roast_key]).to eq "dark"
-        expect(result[:reason]).to eq "全記録ベース"
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.all")
       end
     end
 
@@ -48,7 +48,7 @@ RSpec.describe RecommendedRoast do
       it "味覚診断を根拠にすること" do
         result = call(taste_profile: user.reload.taste_profile)
         expect(result[:roast_key]).to eq "dark"
-        expect(result[:reason]).to eq "味覚診断ベース"
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.diagnosis")
       end
     end
 
@@ -68,7 +68,7 @@ RSpec.describe RecommendedRoast do
 
     it "焙煎度不明の記録を根拠にせず、味覚診断にフォールバックすること" do
       result = call(taste_profile: user.reload.taste_profile)
-      expect(result[:reason]).to eq "味覚診断ベース"
+      expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.diagnosis")
       expect(result[:roast_key]).to eq "dark"
     end
 
@@ -88,7 +88,7 @@ RSpec.describe RecommendedRoast do
 
     it "不明な記録で閾値を満たしたことにしないこと" do
       result = call(taste_profile: user.reload.taste_profile)
-      expect(result[:reason]).to eq "味覚診断ベース"
+      expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.diagnosis")
     end
   end
 
@@ -161,7 +161,7 @@ RSpec.describe RecommendedRoast do
         create(:taste_profile, :light_like, user: user)
         result = call(taste_profile: user.reload.taste_profile)
 
-        expect(result[:reason]).to eq "全記録ベース"
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.all")
         expect(result[:confidence]).not_to eq :hypothesis
       end
 
@@ -169,8 +169,86 @@ RSpec.describe RecommendedRoast do
         create(:taste_profile, :dark_like, user: user)
         result = call(taste_profile: user.reload.taste_profile)
 
-        expect(result[:reason]).to eq "味覚診断ベース"
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.diagnosis")
         expect(result[:confidence]).not_to eq :stable
+      end
+    end
+  end
+
+  # ここから #117。件数ではなく評価にもとづいて焙煎度を選ぶ
+  describe "評価にもとづく選定" do
+    context "よく飲んでいるが低評価の焙煎度がある場合" do
+      before do
+        6.times { log(roast: :dark,  rating: 2) }
+        2.times { log(roast: :light, rating: 5) }
+        create(:taste_profile, :dark_like, user: user)
+      end
+
+      it "件数が多くても低評価の焙煎度は推薦しないこと" do
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:roast_key]).to eq "light"
+      end
+    end
+
+    context "★4以上の中に、件数は多いが評価がやや低い焙煎度がある場合" do
+      before do
+        3.times { log(roast: :light, rating: 5) }
+        4.times { log(roast: :dark,  rating: 4) }
+        create(:taste_profile, user: user)
+      end
+
+      it "件数ではなく評価の高い方を推薦すること" do
+        # 優先度1（★4以上）でも件数だけで決まっていた
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.liked")
+        expect(result[:roast_key]).to eq "light"
+      end
+    end
+
+    context "低評価の記録しかない場合" do
+      before do
+        5.times { log(roast: :dark, rating: 1) }
+        create(:taste_profile, :light_like, user: user)
+      end
+
+      it "実データを根拠にせず、味覚診断に戻すこと" do
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.diagnosis")
+        expect(result[:roast_key]).to eq "light"
+      end
+
+      it "確からしさも仮説として扱うこと" do
+        expect(call(taste_profile: user.reload.taste_profile)[:confidence]).to eq :hypothesis
+      end
+    end
+
+    context "記録が1件だけの焙煎度がある場合" do
+      before do
+        1.times { log(roast: :light, rating: 5) }
+        5.times { log(roast: :dark,  rating: 4) }
+        create(:taste_profile, user: user)
+      end
+
+      it "1件だけの焙煎度が、複数件ある焙煎度を上回らないこと" do
+        # 偶然の1杯が居座らないよう、2件以上ある焙煎度どうしで比べる
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:roast_key]).to eq "dark"
+      end
+    end
+
+    context "全ての焙煎度が1件ずつの場合" do
+      before do
+        log(roast: :light, rating: 5)
+        log(roast: :dark,  rating: 2)
+        log(roast: :medium, rating: 3)
+        log(roast: :medium_dark, rating: 3)
+        log(roast: :light, rating: 5)
+        create(:taste_profile, user: user)
+      end
+
+      it "比較できる焙煎度が無ければ全体で評価の高いものを選ぶこと" do
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:roast_key]).to eq "light"
       end
     end
   end

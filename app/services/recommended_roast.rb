@@ -6,6 +6,10 @@ class RecommendedRoast
   # 旧・信頼度が low を抜ける境界（全記録10件）を引き継いでいる。
   STABLE_MIN = 10
 
+  # おすすめとして提示するのに必要な平均評価。★3（普通）を下回るものは推薦しない。
+  # 低評価しかつけていない焙煎度を「おすすめ」として出さないため（#117）。
+  MIN_AVERAGE_RATING = 3.0
+
   def initialize(preference_liked:, preference_all:, taste_profile:)
     @liked = preference_liked
     @all   = preference_all
@@ -16,26 +20,32 @@ class RecommendedRoast
     # 焙煎度が不明な記録は根拠にできないため、閾値の判定には roast_logs_count を使う。
     # logs_count（不明を含む全件）で判定すると、不明な記録だけで閾値を満たしてしまう。
 
+    # 選ぶのは「件数が最も多い焙煎度」ではなく「評価が最も高い焙煎度」。
+    # よく飲んでいることと好きであることは別で、惰性で頼んでいる一杯が
+    # 最頻値になると好みと逆の推薦になるため（#117）。
+
     # 1) ★4以上が十分あるなら最優先
     if @liked[:roast_available] && @liked[:roast_logs_count].to_i >= MIN_LIKED
       return build(
-        roast_key: @liked[:summary_roast_key],
-        label: @liked[:summary_roast],
-        reason: "★4以上が最も多い",
+        roast_key: @liked[:top_rated_roast_key],
+        label: @liked[:top_rated_roast],
+        reason: I18n.t("services.recommended_roast.reason.liked"),
         n: @liked[:roast_logs_count],
-        message: "最近の「好き」から見ると、この焙煎度が合いやすいです。",
+        message: I18n.t("services.recommended_roast.message.liked"),
         from_logs: true
       )
     end
 
-    # 2) 全記録が十分あるなら次点
-    if @all[:roast_available] && @all[:roast_logs_count].to_i >= MIN_ALL
+    # 2) 全記録が十分あり、かつ低評価ばかりでないなら次点。
+    #    平均が★3を下回る焙煎度しかない場合は実データを根拠にせず診断へ落とす。
+    if @all[:roast_available] && @all[:roast_logs_count].to_i >= MIN_ALL &&
+       @all[:top_rated_average].to_f >= MIN_AVERAGE_RATING
       return build(
-        roast_key: @all[:summary_roast_key],
-        label: @all[:summary_roast],
-        reason: "全記録ベース",
+        roast_key: @all[:top_rated_roast_key],
+        label: @all[:top_rated_roast],
+        reason: I18n.t("services.recommended_roast.reason.all"),
         n: @all[:roast_logs_count],
-        message: "記録全体の傾向から見ると、この焙煎度が選びやすいです。",
+        message: I18n.t("services.recommended_roast.message.all"),
         from_logs: true
       )
     end
@@ -47,9 +57,9 @@ class RecommendedRoast
       return build(
         roast_key: key,
         label: label,
-        reason: "味覚診断ベース",
+        reason: I18n.t("services.recommended_roast.reason.diagnosis"),
         n: 0,
-        message: "まずは診断結果の焙煎度を軸に選んで、記録を増やしてみましょう。",
+        message: I18n.t("services.recommended_roast.message.diagnosis"),
         from_logs: false
       )
     end
