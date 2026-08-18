@@ -31,6 +31,9 @@ window.innerWidth        → 2560   ← 変わっていない
 
 これに気づかず「ユーザーが手動で戻している」と誤解したことがあるので、リサイズ結果を信用しないこと。
 
+（macOS の Chrome 拡張経由で確認。将来直る可能性はあるため、`innerWidth` を実際に読んで
+効いているか確かめれば、そのときは iframe を使わずに済む）
+
 ## iframe を使う
 
 **iframe 内ではメディアクエリが iframe の幅で評価される。** これを利用すると実機相当の判定ができる。
@@ -53,7 +56,9 @@ document.body.style.cssText = 'margin:0;background:#334155;';
 const f = document.createElement('iframe');
 f.src = '<確認したいパス>';
 f.width = 390; f.height = 900;
-f.style.cssText = 'border:6px solid #0f172a;border-radius:12px;transform:scale(1.35);transform-origin:top left;background:#fff;';
+// box-sizing を明示するのが要点。ホストページが border-box を当てていると
+// ボーダーが内側に食い込み、ビューポートが 390px にならない（実測 378px）
+f.style.cssText = 'box-sizing:content-box;border:6px solid #0f172a;border-radius:12px;transform:scale(1.35);transform-origin:top left;background:#fff;';
 document.body.appendChild(f);
 await new Promise(r => f.addEventListener('load', r, { once: true }));
 JSON.stringify({
@@ -62,8 +67,10 @@ JSON.stringify({
 })
 ```
 
-**`mdBreakpointInsideIframe` が `false` であることを必ず確認する。**
-`true` ならモバイルレイアウトになっておらず、以降の確認に意味がない。
+確認すべきは2点。どちらか外れていれば以降の確認に意味がない。
+
+- **`iframeInnerWidth` が 390 であること。** ここがずれると、狭い端末で出る崩れを取り逃がす
+- **`mdBreakpointInsideIframe` が `false` であること。** `true` ならモバイルレイアウトになっていない
 
 ### 3. 目的の箇所までスクロールして撮る
 
@@ -102,7 +109,11 @@ JSON.stringify({
 日本語の短いラベルは、隣の要素に押されると**1文字ずつ折り返す**。見た目で気づきにくいので、
 要素の高さが1行分かを確認する。
 
+`javascript_tool` は呼び出しごとにスコープが独立するため、毎回 `f` と `d` を取り直す。
+
 ```javascript
+const f = document.querySelector('iframe');
+const d = f.contentDocument;
 const labels = [...d.querySelectorAll('p')].filter(p => ['<ラベル1>', '<ラベル2>'].includes(p.textContent.trim()));
 JSON.stringify({ 各ラベルの高さ: labels.map(l => Math.round(l.getBoundingClientRect().height)) })
 ```
