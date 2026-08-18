@@ -1,0 +1,63 @@
+<%# 診断（仮説）と★4以上の記録（実測）のズレ（#120） %>
+<div class="rounded-xl border bg-white p-6 shadow-sm space-y-4">
+  <h2 class="text-lg font-semibold"><%= t("preferences.show.gap.title") %></h2>
+
+  <p class="text-sm text-gray-700 leading-relaxed">
+    <% if gap[:roast].present? %>
+      <%# 味だけズレている場合に「診断ではAでしたが実際もA」とならないよう、焙煎度の一致で分岐する %>
+      <%= t("preferences.show.gap.#{gap[:roast][:match] ? 'lead_aligned' : 'lead_diverged'}",
+            diagnosed: gap[:roast][:diagnosed_label], actual: gap[:roast][:actual_label]) %>
+    <% else %>
+      <%# 焙煎度が不明な記録ばかりの場合は味だけで語る %>
+      <%= t("preferences.show.gap.#{gap[:verdict] == :diverged ? 'lead_taste_only_diverged' : 'lead_taste_only_aligned'}") %>
+    <% end %>
+  </p>
+
+  <div class="space-y-3">
+    <% gap[:axes].each do |axis| %>
+      <div class="rounded-lg border p-4">
+        <%# 狭い幅では説明文に押されて軸名が1文字ずつ折り返すため、縦に積む %>
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
+          <p class="shrink-0 text-sm font-semibold text-gray-900">
+            <%= t("preferences.show.gap.axis.#{axis[:key]}") %>
+          </p>
+          <p class="text-xs <%= axis[:large] ? 'text-amber-800 font-semibold' : 'text-gray-500' %>">
+            <% if axis[:large] %>
+              <%= t("preferences.show.gap.direction.#{axis[:direction]}") %>
+            <% else %>
+              <%= t("preferences.show.gap.direction.same") %>
+            <% end %>
+          </p>
+        </div>
+
+        <%# 0..10 の同じ尺度で診断と実際を並べる %>
+        <div class="mt-3 space-y-2">
+          <% [[:diagnosed, axis[:diagnosed], "bg-stone-400"],
+              [:actual,    axis[:actual],    "bg-amber-600"]].each do |label_key, value, bar_color| %>
+            <div class="flex items-center gap-3">
+              <span class="w-14 shrink-0 text-xs text-gray-500">
+                <%= t("preferences.show.gap.column.#{label_key}") %>
+              </span>
+              <div class="h-2 flex-1 overflow-hidden rounded-full bg-stone-100">
+                <div class="h-full rounded-full <%= bar_color %>" style="width: <%= (value / 10.0 * 100).round %>%"></div>
+              </div>
+              <span class="w-8 shrink-0 text-right text-xs text-gray-600"><%= value.round(1) %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <p class="text-xs text-gray-500">
+    <%= t("preferences.show.gap.based_on", count: gap[:logs_count]) %>
+  </p>
+
+  <% if gap[:verdict] == :diverged %>
+    <div class="pt-1">
+      <p class="text-xs text-gray-500 mb-2"><%= t("preferences.show.gap.rediagnose_note") %></p>
+      <%= link_to t("preferences.show.gap.rediagnose"), new_taste_diagnosis_path,
+                  class: "inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-700 text-white hover:bg-amber-800 transition" %>
+    </div>
+  <% end %>
+</div>
