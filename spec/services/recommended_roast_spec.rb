@@ -237,18 +237,48 @@ RSpec.describe RecommendedRoast do
     end
 
     context "全ての焙煎度が1件ずつの場合" do
+      # 2件以上ある焙煎度が一つも無いため、件数によるふるい分けができない。
+      # 焙煎度は unknown を除き4種類しかなく、全記録ベース（5件以上）では
+      # 必ずどれかが2件以上になるため、この分岐に入るのは★4以上のときだけ
       before do
         log(roast: :light, rating: 5)
-        log(roast: :dark,  rating: 2)
-        log(roast: :medium, rating: 3)
-        log(roast: :medium_dark, rating: 3)
-        log(roast: :light, rating: 5)
+        log(roast: :medium, rating: 4)
+        log(roast: :dark, rating: 4)
         create(:taste_profile, user: user)
       end
 
       it "比較できる焙煎度が無ければ全体で評価の高いものを選ぶこと" do
         result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.liked")
         expect(result[:roast_key]).to eq "light"
+      end
+    end
+
+    context "評価が同点の焙煎度がある場合" do
+      before do
+        2.times { log(roast: :light, rating: 5) }
+        4.times { log(roast: :dark,  rating: 5) }
+        create(:taste_profile, user: user)
+      end
+
+      it "件数の多い方を選ぶこと" do
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:roast_key]).to eq "dark"
+      end
+    end
+
+    context "記録は十分あるが、どの焙煎度も低評価の場合" do
+      before do
+        10.times { log(roast: :dark,  rating: 2) }
+        1.times  { log(roast: :light, rating: 2) }
+        create(:taste_profile, user: user)
+      end
+
+      it "「記録するほど近づきます」ではなく、好みが見つかっていない旨を伝えること" do
+        # 11件記録しているユーザーに「記録するほど」では、
+        # なぜ実データが使われないのか伝わらない
+        result = call(taste_profile: user.reload.taste_profile)
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.low_rated")
       end
     end
   end

@@ -50,8 +50,12 @@ class RecommendedRoast
       )
     end
 
-    # 3) 記録が少ないなら診断（仮説）に戻す
+    # 3) 記録が少ないか、低評価ばかりで根拠にできないなら診断（仮説）に戻す
     if @taste_profile.present?
+      # 記録は十分あるのに低評価で弾かれた場合、「記録するほど近づきます」では
+      # なぜ実データが使われないのか伝わらないため文言を分ける
+      rejected_for_low_rating =
+        @all[:roast_available] && @all[:roast_logs_count].to_i >= MIN_ALL
       key = @taste_profile.preferred_roast.to_s
       label = PreferenceSummary::ROAST_LABELS.fetch(@taste_profile.preferred_roast.to_s, "不明")
       return build(
@@ -60,7 +64,8 @@ class RecommendedRoast
         reason: I18n.t("services.recommended_roast.reason.diagnosis"),
         n: 0,
         message: I18n.t("services.recommended_roast.message.diagnosis"),
-        from_logs: false
+        from_logs: false,
+        low_rated: rejected_for_low_rating
       )
     end
 
@@ -69,8 +74,9 @@ class RecommendedRoast
 
   private
 
-  def build(roast_key:, label:, reason:, n:, message:, from_logs:)
+  def build(roast_key:, label:, reason:, n:, message:, from_logs:, low_rated: false)
     level = confidence_level(from_logs, n.to_i)
+    notice_key = (level == :hypothesis && low_rated) ? :low_rated : level
 
     {
       available: true,
@@ -80,7 +86,7 @@ class RecommendedRoast
       n: n,
       message: message,
       confidence: level,
-      notice: I18n.t("services.recommended_roast.notice.#{level}", count: n.to_i)
+      notice: I18n.t("services.recommended_roast.notice.#{notice_key}", count: n.to_i)
     }
   end
 

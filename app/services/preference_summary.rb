@@ -60,8 +60,8 @@ class PreferenceSummary
       top_rated    = pick_top_rated_roast_key(rating_avgs, roast_counts, logs_with_roast)
       rated_label  = roast_label(top_rated)
       rated_key    = CoffeeLog.roast_levels.key(top_rated) || top_rated.to_s
-      rated_avg    = rating_avgs[top_rated].to_f.round(2)
-      rated_count  = roast_counts[top_rated].to_i
+      # 閾値判定に使うため丸めない。丸めると 2.995 が 3.0 として通ってしまう
+      rated_avg    = rating_avgs[top_rated].to_f
     end
 
     # 味：件数ベースの平均（★で重み付けしない）。焙煎度が不明でも味は記録されている。
@@ -94,7 +94,6 @@ class PreferenceSummary
       top_rated_roast: rated_label,
       top_rated_roast_key: rated_key,
       top_rated_average: rated_avg,
-      top_rated_count: rated_count,
       reason: summary_reason(roast_logs_count),
       charts_reason: scope_reason
     }

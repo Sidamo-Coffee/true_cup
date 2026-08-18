@@ -129,4 +129,48 @@ RSpec.describe PreferenceSummary do
       expect(result).not_to have_key(:notice)
     end
   end
+  # #117 で追加。件数最多の summary_* とは別に、評価が最も高い焙煎度を返す
+  describe "評価が最も高い焙煎度" do
+    it "件数が多い焙煎度ではなく、平均評価が高い焙煎度を返すこと" do
+      6.times { log(roast: :dark,  rating: 2) }
+      2.times { log(roast: :light, rating: 5) }
+      result = described_class.new(user).call
+
+      expect(result[:summary_roast_key]).to eq "dark"     # よく飲んでいるのは深煎り
+      expect(result[:top_rated_roast_key]).to eq "light"  # 評価が高いのは浅煎り
+      expect(result[:top_rated_average]).to eq 5.0
+    end
+
+    it "記録が1件だけの焙煎度は、2件以上ある焙煎度がある限り選ばないこと" do
+      1.times { log(roast: :light, rating: 5) }
+      5.times { log(roast: :dark,  rating: 4) }
+      expect(described_class.new(user).call[:top_rated_roast_key]).to eq "dark"
+    end
+
+    it "2件以上ある焙煎度が無ければ、全体で評価の高いものを選ぶこと" do
+      log(roast: :light, rating: 5)
+      log(roast: :dark,  rating: 3)
+      expect(described_class.new(user).call[:top_rated_roast_key]).to eq "light"
+    end
+
+    it "評価が同点なら件数の多い方を選ぶこと" do
+      2.times { log(roast: :light, rating: 5) }
+      4.times { log(roast: :dark,  rating: 5) }
+      expect(described_class.new(user).call[:top_rated_roast_key]).to eq "dark"
+    end
+
+    it "平均は丸めずに返すこと" do
+      # 閾値判定に使うため、丸めると境界の挙動が変わる
+      log(roast: :light, rating: 5)
+      log(roast: :light, rating: 4)
+      log(roast: :light, rating: 4)
+      expect(described_class.new(user).call[:top_rated_average]).to be_within(0.0001).of(13.0 / 3)
+    end
+
+    it "焙煎度が不明な記録は対象にしないこと" do
+      3.times { log(roast: :unknown, rating: 5) }
+      2.times { log(roast: :dark,    rating: 3) }
+      expect(described_class.new(user).call[:top_rated_roast_key]).to eq "dark"
+    end
+  end
 end
