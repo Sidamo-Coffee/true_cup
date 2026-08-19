@@ -186,11 +186,17 @@
       </div>
     </div>
 
-    <%# 補足メッセージ（おすすめの確からしさ） %>
+    <%# 補足メッセージ（おすすめの確からしさ）と、次の段階までの進み具合 %>
     <% if @recommended_roast[:notice].present? %>
       <p class="text-xs text-gray-500 mt-4 leading-relaxed">
         <%= @recommended_roast[:notice] %>
       </p>
+    <% end %>
+
+    <% if @recommended_roast[:progress].present? %>
+      <div class="mt-4">
+        <%= render "shared/recommendation_progress", progress: @recommended_roast[:progress] %>
+      </div>
     <% end %>
   </section>
 

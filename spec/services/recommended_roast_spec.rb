@@ -282,4 +282,116 @@ RSpec.describe RecommendedRoast do
       end
     end
   end
+
+  # ここから #122。次の段階までの進み具合を返す
+  describe "進捗" do
+    before { create(:taste_profile, user: user) }
+
+    context "まだ診断を根拠にしている場合" do
+      it "実データに切り替わるまでの残り件数を返すこと" do
+        1.times { log(roast: :dark, rating: 5) }
+        progress = call(taste_profile: user.reload.taste_profile)[:progress]
+
+        expect(progress[:stage]).to eq :hypothesis
+        expect(progress[:current]).to eq 1
+        expect(progress[:target]).to eq described_class::MIN_ALL
+        expect(progress[:remaining]).to eq described_class::MIN_ALL - 1
+      end
+
+      it "記録が1件も無くても、これからの見通しとして返すこと" do
+        progress = call(taste_profile: user.reload.taste_profile)[:progress]
+        expect(progress[:current]).to eq 0
+        expect(progress[:percent]).to eq 0
+      end
+    end
+
+    # 進捗が後退しないことは、この機能の前提そのもの
+    describe "単調に増えること" do
+      it "根拠が全記録から★4以上へ切り替わっても後退しないこと" do
+        6.times { log(roast: :dark, rating: 3) }
+        before_switch = call(taste_profile: user.reload.taste_profile)[:progress]
+
+        3.times { log(roast: :medium, rating: 5) }   # 根拠が★4以上へ切り替わる
+        after_switch = call(taste_profile: user.reload.taste_profile)[:progress]
+
+        expect(after_switch[:current]).to be >= before_switch[:current]
+        expect(after_switch[:percent]).to be >= before_switch[:percent]
+      end
+
+      it "★3ばかりでも記録するたびに進むこと" do
+        # 分子に「根拠になった件数」を使うと、★4以上が0件のあいだ動かなくなる
+        counts = (1..4).map do |_|
+          log(roast: :dark, rating: 3)
+          call(taste_profile: user.reload.taste_profile)[:progress][:current]
+        end
+
+        expect(counts).to eq [ 1, 2, 3, 4 ]
+      end
+    end
+
+    context "実データを根拠にしているが安定していない場合" do
+      it "安定するまでの残り件数を返すこと" do
+        4.times { log(roast: :dark, rating: 5) }
+        progress = call(taste_profile: user.reload.taste_profile)[:progress]
+
+        expect(progress[:stage]).to eq :likely
+        expect(progress[:current]).to eq 4
+        expect(progress[:target]).to eq described_class::STABLE_MIN
+        expect(progress[:remaining]).to eq 6
+      end
+    end
+
+    context "安定している場合" do
+      it "残り0件として返すこと" do
+        described_class::STABLE_MIN.times { log(roast: :dark, rating: 5) }
+        progress = call(taste_profile: user.reload.taste_profile)[:progress]
+
+        expect(progress[:stage]).to eq :stable
+        expect(progress[:remaining]).to eq 0
+        expect(progress[:percent]).to eq 100
+      end
+
+      it "目標を超えても「15 / 10」のような表示にしないこと" do
+        (described_class::STABLE_MIN + 5).times { log(roast: :dark, rating: 5) }
+        progress = call(taste_profile: user.reload.taste_profile)[:progress]
+
+        expect(progress[:current]).to eq described_class::STABLE_MIN
+        expect(progress[:percent]).to eq 100
+      end
+    end
+
+    # 件数を増やしても段階が進まない状況では、残り件数を約束しない
+    context "低評価ばかりで実データを根拠にできない場合" do
+      it "進捗を返さないこと" do
+        10.times { log(roast: :dark, rating: 2) }
+        expect(call(taste_profile: user.reload.taste_profile)[:progress]).to be_nil
+      end
+    end
+
+    context "焙煎度が不明な記録しかない場合" do
+      it "進捗を返さないこと" do
+        # 件数ではなく焙煎度の記録が足りていないため、
+        # 「あとN件」と言うと誤った期待を持たせる
+        5.times { log(roast: :unknown, rating: 5) }
+        expect(call(taste_profile: user.reload.taste_profile)[:progress]).to be_nil
+      end
+
+      it "★4以上の記録が1件も無い場合も進捗を返さないこと" do
+        5.times { log(roast: :unknown, rating: 2) }
+        expect(call(taste_profile: user.reload.taste_profile)[:progress]).to be_nil
+      end
+    end
+
+    context "推薦できない場合" do
+      it "進捗を返さないこと" do
+        expect(call(taste_profile: nil)[:progress]).to be_nil
+      end
+    end
+
+    it "割合は0〜100の範囲に収まること" do
+      described_class::STABLE_MIN.times { log(roast: :dark, rating: 5) }
+      progress = call(taste_profile: user.reload.taste_profile)[:progress]
+      expect(progress[:percent]).to be_between(0, 100)
+    end
+  end
 end

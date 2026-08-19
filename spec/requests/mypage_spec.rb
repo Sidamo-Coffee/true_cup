@@ -34,6 +34,24 @@ RSpec.describe "Mypage", type: :request do
         expect(drawings.uniq.size).to eq(drawings.size)
       end
 
+
+      context "実データを根拠にしている場合" do
+        before do
+          create(:taste_profile, user: user)
+          4.times { create(:coffee_log, :dark_roast, user: user, overall_rating: 5) }
+        end
+
+        it "次の段階までの進み具合が表示されること" do
+          get mypage_path
+          expect(response.body).to include(I18n.t("services.recommended_roast.progress.label.likely"))
+          expect(response.body).to include(
+            ERB::Util.html_escape(
+              I18n.t("services.recommended_roast.progress.remaining.likely", count: 6)
+            )
+          )
+        end
+      end
+
       context "焙煎度が全て不明の記録しかない場合" do
         before { 3.times { create(:coffee_log, user: user, roast_level: :unknown) } }
 

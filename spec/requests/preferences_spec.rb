@@ -31,6 +31,42 @@ RSpec.describe "Preferences", type: :request do
       end
 
 
+
+      # #122 次の段階までの進み具合
+      context "実データを根拠にしているが安定していない場合" do
+        before do
+          create(:taste_profile, user: user)
+          4.times { create(:coffee_log, :dark_roast, user: user, overall_rating: 5) }
+        end
+
+        it "安定するまでの残り件数が表示されること" do
+          get preferences_path
+          expect(response.body).to include(
+            ERB::Util.html_escape(
+              I18n.t("services.recommended_roast.progress.remaining.likely", count: 6)
+            )
+          )
+        end
+
+        it "現在地が分かること" do
+          get preferences_path
+          expect(response.body).to include("4 / #{RecommendedRoast::STABLE_MIN}")
+        end
+      end
+
+      context "記録を増やしても段階が進まない場合" do
+        before do
+          create(:taste_profile, user: user)
+          # 低評価ばかりで、件数を増やしても実データを根拠にできない
+          10.times { create(:coffee_log, :dark_roast, user: user, overall_rating: 2) }
+        end
+
+        it "残り件数を約束しないこと" do
+          get preferences_path
+          expect(response.body).not_to include(I18n.t("services.recommended_roast.progress.label.hypothesis"))
+        end
+      end
+
       # #120 診断と実際のズレ
       context "診断があり、★4以上の記録が十分にある場合" do
         before do
