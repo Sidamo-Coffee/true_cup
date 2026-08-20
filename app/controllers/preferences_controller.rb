@@ -5,15 +5,9 @@ class PreferencesController < ApplicationController
     @scope = %w[all liked].include?(params[:scope]) ? params[:scope] : "all"
     @preference = PreferenceSummary.new(current_user, scope: @scope).call
 
-    # おすすめの確からしさを表示するため、選択中のタブに関わらず両スコープを集計する。
-    # RecommendedRoast が liked / all の両方を根拠の判定に使うため（#118）。
+    # おすすめ本体も、その確からしさ・進み具合も、このページには置かない（#143）。
+    # 診断とのズレの比較相手として、★4以上の集計だけが必要。
     preference_liked = PreferenceSummary.new(current_user, scope: :liked).call
-
-    @recommended_roast = RecommendedRoast.new(
-      preference_liked: preference_liked,
-      preference_all: PreferenceSummary.new(current_user, scope: :all).call,
-      taste_profile: current_user.taste_profile
-    ).call
 
     # 診断と実際のズレ。診断は「好みの強さ」なので、比較相手は★4以上の記録（#120）
     @diagnosis_gap = DiagnosisGap.new(

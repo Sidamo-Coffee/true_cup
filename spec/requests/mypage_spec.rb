@@ -82,11 +82,13 @@ RSpec.describe "Mypage", type: :request do
           )
         end
 
-        it "/preferences と同じ判断になること" do
-          # 片方だけ直すと画面間で食い違う
+        it "片方を「多い傾向」とは表示しないこと" do
           get mypage_path
           expect(response.body).not_to include(
             ERB::Util.html_escape(I18n.t("mypage.show.insights.summary_roast", roast: "浅煎り"))
+          )
+          expect(response.body).not_to include(
+            ERB::Util.html_escape(I18n.t("mypage.show.insights.summary_roast", roast: "深煎り"))
           )
         end
       end
