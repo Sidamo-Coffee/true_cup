@@ -50,6 +50,45 @@ RSpec.describe "Mypage", type: :request do
             )
           )
         end
+
+        # #143 確からしさは、それが修飾するおすすめの近くに置く
+        it "おすすめの確からしさが、おすすめカードの中に表示されること" do
+          get mypage_path
+
+          notice_at   = response.body.index(
+            ERB::Util.html_escape(I18n.t("services.recommended_roast.notice.likely", count: 4))
+          )
+          insights_at = response.body.index(I18n.t("mypage.show.sections.insights"))
+
+          expect(notice_at).to be_present
+          expect(notice_at).to be < insights_at
+        end
+      end
+
+
+      # #144 件数が同数のとき、片方を「多い」と呼ばない
+      context "最も飲んでいる焙煎度が同数の場合" do
+        before do
+          2.times { create(:coffee_log, :light_roast, user: user, overall_rating: 4) }
+          2.times { create(:coffee_log, :dark_roast, user: user, overall_rating: 4) }
+        end
+
+        it "同じくらいであることを伝えること" do
+          get mypage_path
+          expect(response.body).to include(
+            ERB::Util.html_escape(
+              I18n.t("mypage.show.insights.summary_roast_tied_two", first: "浅煎り", second: "深煎り")
+            )
+          )
+        end
+
+        it "/preferences と同じ判断になること" do
+          # 片方だけ直すと画面間で食い違う
+          get mypage_path
+          expect(response.body).not_to include(
+            ERB::Util.html_escape(I18n.t("mypage.show.insights.summary_roast", roast: "浅煎り"))
+          )
+        end
       end
 
       context "焙煎度が全て不明の記録しかない場合" do

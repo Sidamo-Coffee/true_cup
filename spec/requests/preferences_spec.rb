@@ -32,6 +32,55 @@ RSpec.describe "Preferences", type: :request do
 
 
 
+
+      # #143 おすすめの確からしさはマイページに集約する
+      context "おすすめの確からしさ" do
+        before do
+          create(:taste_profile, user: user)
+          4.times { create(:coffee_log, :dark_roast, user: user, overall_rating: 5) }
+        end
+
+        it "/preferences には表示しないこと" do
+          get preferences_path
+          expect(response.body).not_to include(
+            ERB::Util.html_escape(I18n.t("services.recommended_roast.notice.likely", count: 4))
+          )
+        end
+
+        it "進捗バーは残ること" do
+          # 分子は「焙煎度を記録した件数」で、見出しの根拠と一致するため矛盾しない
+          get preferences_path
+          expect(response.body).to include(I18n.t("services.recommended_roast.progress.label.likely"))
+        end
+      end
+
+      # #144 件数が同数のとき
+      context "最も飲んでいる焙煎度が同数の場合" do
+        before do
+          2.times { create(:coffee_log, :light_roast, user: user, overall_rating: 2) }
+          2.times { create(:coffee_log, :dark_roast, user: user, overall_rating: 5) }
+        end
+
+        it "片方を「最も飲んでいる」とは表示しないこと" do
+          get preferences_path
+          expect(response.body).not_to include(
+            ERB::Util.html_escape(
+              I18n.t("preferences.show.summary.text", roast: "浅煎り",
+                     suffix: I18n.t("preferences.show.summary.suffix.all"))
+            )
+          )
+        end
+
+        it "同じくらい飲んでいることを伝えること" do
+          get preferences_path
+          expect(response.body).to include(
+            ERB::Util.html_escape(I18n.t("preferences.show.summary.suffix_tied.all"))
+          )
+          expect(response.body).to include("浅煎り")
+          expect(response.body).to include("深煎り")
+        end
+      end
+
       # #122 次の段階までの進み具合
       context "実データを根拠にしているが安定していない場合" do
         before do
@@ -203,14 +252,15 @@ RSpec.describe "Preferences", type: :request do
           expect(response.body).not_to include(I18n.t("preferences.show.summary.suffix.all"))
         end
 
-        it "焙煎度の傾向が出せない以上、おすすめが安定しているとは表示しないこと" do
+        it "おすすめの確からしさは表示しないこと" do
+          # おすすめ本体はこのページに無い。確からしさだけ置くと、
+          # すぐ上の見出しを修飾しているように読める（#143）
           create(:taste_profile, user: user)
           get preferences_path
 
-          expect(response.body).to include(
+          expect(response.body).not_to include(
             I18n.t("services.recommended_roast.notice.hypothesis")
           )
-          expect(response.body).not_to include("安定しています")
         end
       end
 

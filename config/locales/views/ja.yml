@@ -175,6 +175,9 @@ ja:
         all_title: "全ての記録"
         liked_title: "好評価(★4以上)"
         summary_roast: "「%{roast}」が多い傾向です"
+        # 件数が同数のときは片方を「多い」と呼ばない（#144）
+        summary_roast_tied_two: "「%{first}」と「%{second}」が同じくらいです"
+        summary_roast_tied_many: "いくつかの焙煎度が同じくらいです"
         target_count: "対象：%{count}件（件数ベース）"
         empty_all: "まだ傾向を表示できる記録がありません。"
         empty_liked: "★4以上の記録がまだありません。お気に入りに★4以上を付けると「好き」が見えてきます。"
@@ -321,9 +324,15 @@ ja:
       # 「好み」の判定はおすすめ側（評価ベース）が担うため、ここで好みを主張しない（#117）
       summary:
         text: "あなたは「%{roast}」のコーヒーを %{suffix}。"
+        # 件数が同数のときは、片方を「最も」と呼ばない（#144）
+        tied_two: "「%{first}」と「%{second}」を %{suffix}。"
+        tied_many: "いくつかの焙煎度を %{suffix}。"
         suffix:
           all: "よく飲んでいます"
           liked: "★4以上をつけた記録の中で、いちばん多く飲んでいます"
+        suffix_tied:
+          all: "同じくらい飲んでいます"
+          liked: "★4以上をつけた記録の中で、同じくらい飲んでいます"
 
       charts:
         roast:
