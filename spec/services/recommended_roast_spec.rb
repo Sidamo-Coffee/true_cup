@@ -410,6 +410,36 @@ RSpec.describe RecommendedRoast do
       end
     end
 
+    # #146 レビュー指摘: 案内どおり記録しても、同点が続けば実データには切り替わらない
+    context "同点がまだ見えていない段階から、記録を足していく場合" do
+      before { create(:taste_profile, user: user) }
+
+      it "件数だけで達成できるとは言い切らないこと" do
+        2.times { log(roast: :light, rating: 4) }
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:progress]).to be_present
+        expect(
+          I18n.t("services.recommended_roast.progress.remaining.#{result[:progress][:stage]}",
+                 count: result[:progress][:remaining])
+        ).to include "目安"
+      end
+
+      it "案内どおり記録して同点になったら、理由が入れ替わること" do
+        # ここでバーが消えるのは意図した挙動。件数では進まないため。
+        # ただし直前の案内が「あとN件で出せます」と言い切っていると約束破りになる
+        log(roast: :light,  rating: 4)
+        log(roast: :medium, rating: 4)
+        expect(call(taste_profile: user.reload.taste_profile)[:progress]).to be_present
+
+        log(roast: :dark, rating: 4)
+        after = call(taste_profile: user.reload.taste_profile)
+
+        expect(after[:progress]).to be_nil
+        expect(after[:notice]).to eq I18n.t("services.recommended_roast.notice.undecided")
+      end
+    end
+
     context "★4以上だけが3つ同点で、全記録はまだ少ない場合" do
       before do
         # #146 の再現データそのもの。全記録は3件しかなく MIN_ALL(5) に満たない
