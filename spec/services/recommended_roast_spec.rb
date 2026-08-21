@@ -7,6 +7,11 @@ RSpec.describe RecommendedRoast do
     create(:coffee_log, user: user, roast_level: roast, overall_rating: rating)
   end
 
+  def remaining_text(result)
+    I18n.t("services.recommended_roast.progress.remaining.#{result[:progress][:stage]}",
+           count: result[:progress][:remaining])
+  end
+
   def call(taste_profile: user.taste_profile)
     described_class.new(
       preference_liked: PreferenceSummary.new(user, scope: :liked).call,
@@ -414,15 +419,38 @@ RSpec.describe RecommendedRoast do
     context "同点がまだ見えていない段階から、記録を足していく場合" do
       before { create(:taste_profile, user: user) }
 
-      it "件数だけで達成できるとは言い切らないこと" do
+      it "診断ベースの段階で、件数だけで達成できるとは言い切らないこと" do
         2.times { log(roast: :light, rating: 4) }
         result = call(taste_profile: user.reload.taste_profile)
 
-        expect(result[:progress]).to be_present
-        expect(
-          I18n.t("services.recommended_roast.progress.remaining.#{result[:progress][:stage]}",
-                 count: result[:progress][:remaining])
-        ).to include "目安"
+        expect(result[:progress][:stage]).to eq :hypothesis
+        expect(remaining_text(result)).to include "目安"
+      end
+
+      it "実データを根拠にした段階でも、件数だけで達成できるとは言い切らないこと" do
+        # ここも同じ。★4以上が同点になった瞬間に診断ベースへ戻り、
+        # 「あとN件記録すると、傾向が安定します」は実現しない
+        3.times { log(roast: :light, rating: 5) }
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:progress][:stage]).to eq :likely
+        expect(remaining_text(result)).to include "目安"
+      end
+
+      it "案内どおり記録しても、同点になれば安定に届かないこと" do
+        3.times { log(roast: :light,  rating: 5) }
+        2.times { log(roast: :medium, rating: 5) }
+        before_state = call(taste_profile: user.reload.taste_profile)
+        expect(before_state[:confidence]).to eq :likely
+        expect(before_state[:tied]).to be false
+
+        # 案内どおり記録を足していくと、三つ巴になって診断ベースまで戻る
+        1.times { log(roast: :medium, rating: 5) }
+        3.times { log(roast: :dark,   rating: 5) }
+        after = call(taste_profile: user.reload.taste_profile)
+
+        expect(after[:confidence]).to eq :hypothesis
+        expect(after[:progress]).to be_nil
       end
 
       it "案内どおり記録して同点になったら、理由が入れ替わること" do
