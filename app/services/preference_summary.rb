@@ -49,6 +49,9 @@ class PreferenceSummary
 
     summary_keys   = []
     summary_labels = []
+    rated_keys     = []
+    rated_labels   = []
+    rated_avg      = 0.0
 
     if roast_logs_count.positive?
       # 件数が最多の焙煎度。同数のときは一つに絞らず全て返す。
@@ -59,12 +62,15 @@ class PreferenceSummary
 
       # 「よく飲んでいる」焙煎度（上の summary_*）とは別に、
       # 「評価が高い」焙煎度を出す。おすすめはこちらを根拠にする（#117）。
-      rating_avgs  = logs_with_roast.group(:roast_level).average(:overall_rating)
-      top_rated    = pick_top_rated_roast_key(rating_avgs, roast_counts, logs_with_roast)
-      rated_label  = roast_label(top_rated)
-      rated_key    = CoffeeLog.roast_levels.key(top_rated) || top_rated.to_s
+      #
+      # 平均が同点のときも一つに絞らない。件数→最終記録日で崩そうとしても、
+      # 同じ日に記録すれば決着せず、実質 enum の定義順で決まっていた（#146）。
+      rating_avgs = logs_with_roast.group(:roast_level).average(:overall_rating)
+      rated_top   = top_rated_roast_keys(rating_avgs, roast_counts)
+      rated_keys   = rated_top.map { |k| CoffeeLog.roast_levels.key(k) || k.to_s }
+      rated_labels = rated_top.map { |k| roast_label(k) }
       # 閾値判定に使うため丸めない。丸めると 2.995 が 3.0 として通ってしまう
-      rated_avg    = rating_avgs[top_rated].to_f
+      rated_avg    = rating_avgs[rated_top.first].to_f
     end
 
     # 味：件数ベースの平均（★で重み付けしない）。焙煎度が不明でも味は記録されている。
@@ -98,9 +104,11 @@ class PreferenceSummary
       summary_roast_keys: summary_keys,
       summary_tied: summary_keys.size > 1,
 
-      # 評価が最も高い焙煎度。件数最多の summary_* とは異なりうる
-      top_rated_roast: rated_label,
-      top_rated_roast_key: rated_key,
+      # 評価が最も高い焙煎度。件数最多の summary_* とは異なりうる。
+      # 同点ならすべて返し、おすすめ側が併記するか判断する（#146）
+      top_rated_roast_keys: rated_keys,
+      top_rated_roast_labels: rated_labels,
+      top_rated_tied: rated_keys.size > 1,
       top_rated_average: rated_avg,
       reason: summary_reason(roast_logs_count, summary_keys.size > 1),
       charts_reason: scope_reason
@@ -119,6 +127,9 @@ class PreferenceSummary
       summary_roast: nil,
       summary_roast_keys: [],
       summary_roast_labels: [],
+      top_rated_roast_keys: [],
+      top_rated_roast_labels: [],
+      top_rated_tied: false,
       summary_tied: false,
       scope: @scope
     }
@@ -199,29 +210,24 @@ class PreferenceSummary
     key.is_a?(Integer) ? key : CoffeeLog.roast_levels.fetch(key.to_s, 99)
   end
 
-  # 平均評価が最も高い焙煎度を選ぶ。
+  # 平均評価が最も高い焙煎度。同点ならすべて返す。
   # 記録が1件だけの焙煎度は、2件以上ある焙煎度があるうちは比較対象にしない。
-  # 同点なら件数の多い方、それも同数なら直近に飲んだ方。
-  def pick_top_rated_roast_key(rating_avgs, roast_counts, logs)
-    return nil if rating_avgs.blank?
+  #
+  # 同点は件数で崩す。件数まで並んだら、そこで打ち切って両方返す。
+  # 以前は最終記録日で崩していたが、同じ日に記録すると決着せず、
+  # 最後は enum の定義順という説明できない基準になっていた（#146）。
+  def top_rated_roast_keys(rating_avgs, roast_counts)
+    return [] if rating_avgs.blank?
 
     keys = rating_avgs.keys.select { |k| roast_counts[k].to_i >= MIN_LOGS_PER_ROAST }
     keys = rating_avgs.keys if keys.empty?
 
     best = keys.map { |k| rating_avgs[k].to_f }.max
     candidates = keys.select { |k| rating_avgs[k].to_f == best }
-    return candidates.first if candidates.size == 1
+    return candidates if candidates.size == 1
 
-    max_count  = candidates.map { |k| roast_counts[k].to_i }.max
-    candidates = candidates.select { |k| roast_counts[k].to_i == max_count }
-    return candidates.first if candidates.size == 1
-
-    pick_latest(candidates, logs)
-  end
-
-  def pick_latest(candidates, logs)
-    candidates.max_by do |k|
-      logs.where(roast_level: k).maximum(:drank_on) || Date.new(1970, 1, 1)
-    end
+    max_count = candidates.map { |k| roast_counts[k].to_i }.max
+    candidates.select { |k| roast_counts[k].to_i == max_count }
+              .sort_by { |k| roast_order(k) }
   end
 end

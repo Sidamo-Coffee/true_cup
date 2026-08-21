@@ -53,8 +53,17 @@ class DiagnosisGap
   # 焙煎度の比較だけは、おすすめと同じ roast_logs_count で判定する。
   # logs_count（不明を含む）で判定すると、焙煎度既知が1件でも
   # 「実際は深煎り」と断言してしまい、おすすめの表示と食い違う（#120 レビュー指摘）。
+  #
+  # 同点が MAX_TIED を超える場合は、おすすめ側も実データを根拠にしない。
+  # ここだけ「実際は◯◯」と言うと、同じ画面で食い違う（#146）。
   def roast_comparable?
-    @liked[:roast_available] && @liked[:roast_logs_count].to_i >= MIN_LOGS
+    @liked[:roast_available] &&
+      @liked[:roast_logs_count].to_i >= MIN_LOGS &&
+      rated_keys.size.between?(1, RecommendedRoast::MAX_TIED)
+  end
+
+  def rated_keys
+    @liked[:top_rated_roast_keys].to_a
   end
 
   def build_axes
@@ -87,14 +96,15 @@ class DiagnosisGap
     return nil unless roast_comparable?
 
     diagnosed_key = @taste_profile.preferred_roast.to_s
-    actual_key    = @liked[:top_rated_roast_key].to_s
 
+    # 同点で2つ並ぶことがある。診断結果がそのどちらかなら「診断どおり」とみなす。
+    # 片方だけと突き合わせて「ズレている」と言うと、おすすめの併記と食い違う（#146）。
     {
       diagnosed_key: diagnosed_key,
       diagnosed_label: PreferenceSummary::ROAST_LABELS.fetch(diagnosed_key, diagnosed_key),
-      actual_key: actual_key,
-      actual_label: @liked[:top_rated_roast],
-      match: diagnosed_key == actual_key
+      actual_keys: rated_keys,
+      actual_label: @liked[:top_rated_roast_labels].to_a.join("・"),
+      match: rated_keys.include?(diagnosed_key)
     }
   end
 

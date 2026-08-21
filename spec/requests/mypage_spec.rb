@@ -93,6 +93,54 @@ RSpec.describe "Mypage", type: :request do
         end
       end
 
+      # #146 おすすめの評価が同点のとき
+      context "評価が同点の焙煎度が2つある場合" do
+        before do
+          create(:taste_profile, user: user)
+          2.times { create(:coffee_log, :light_roast, user: user, overall_rating: 5) }
+          2.times { create(:coffee_log, :dark_roast,  user: user, overall_rating: 5) }
+        end
+
+        it "2つ併記すること" do
+          get mypage_path
+          expect(response.body).to include("浅煎り・深煎り")
+        end
+
+        it "「評価が最も高い」とは表示しないこと" do
+          get mypage_path
+          expect(response.body).not_to include(I18n.t("services.recommended_roast.reason.liked"))
+          expect(response.body).to include(I18n.t("services.recommended_roast.reason.liked_tied"))
+        end
+
+        it "焙煎度ごとの購入ガイドを両方出すこと" do
+          get mypage_path
+          expect(response.body).to include(ERB::Util.html_escape(RoastGuide.call("light")[:tell]))
+          expect(response.body).to include(ERB::Util.html_escape(RoastGuide.call("dark")[:tell]))
+        end
+      end
+
+      context "評価が同点の焙煎度が3つある場合" do
+        before do
+          create(:taste_profile, user: user)
+          2.times { create(:coffee_log, :light_roast,       user: user, overall_rating: 5) }
+          2.times { create(:coffee_log, user: user, roast_level: :medium, overall_rating: 5) }
+          2.times { create(:coffee_log, user: user, roast_level: :medium_dark, overall_rating: 5) }
+        end
+
+        it "絞り込めていないことを伝えること" do
+          get mypage_path
+          expect(response.body).to include(
+            ERB::Util.html_escape(I18n.t("services.recommended_roast.notice.undecided"))
+          )
+        end
+
+        it "診断と実際のズレは表示しないこと" do
+          # 実際の好みが定まらないのに「実際は◯◯」と言うと、おすすめと食い違う
+          get preferences_path
+          expect(response.body).not_to include(I18n.t("preferences.show.gap.rediagnose"))
+        end
+      end
+
       context "焙煎度が全て不明の記録しかない場合" do
         before { 3.times { create(:coffee_log, user: user, roast_level: :unknown) } }
 

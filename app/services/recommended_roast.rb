@@ -10,6 +10,10 @@ class RecommendedRoast
   # 低評価しかつけていない焙煎度を「おすすめ」として出さないため（#117）。
   MIN_AVERAGE_RATING = 3.0
 
+  # 同点のまま併記できる上限。4段階しかないため、3つ並んだ時点で
+  # 「どれでもよい」と言っているのと変わらず、おすすめとして意味をなさない（#146）。
+  MAX_TIED = 2
+
   def initialize(preference_liked:, preference_all:, taste_profile:)
     @liked = preference_liked
     @all   = preference_all
@@ -24,14 +28,17 @@ class RecommendedRoast
     # よく飲んでいることと好きであることは別で、惰性で頼んでいる一杯が
     # 最頻値になると好みと逆の推薦になるため（#117）。
 
+    # 平均評価が同点なら焙煎度を絞らない。ただし3つ以上並んだら根拠にしない（#146）。
+    liked_keys = decidable_keys(@liked)
+    all_keys   = decidable_keys(@all)
+
     # 1) ★4以上が十分あるなら最優先
-    if @liked[:roast_available] && @liked[:roast_logs_count].to_i >= MIN_LIKED
+    if @liked[:roast_available] && @liked[:roast_logs_count].to_i >= MIN_LIKED && liked_keys.present?
       return build(
-        roast_key: @liked[:top_rated_roast_key],
-        label: @liked[:top_rated_roast],
-        reason: I18n.t("services.recommended_roast.reason.liked"),
+        roast_keys: liked_keys,
+        labels: @liked[:top_rated_roast_labels],
+        scope_key: "liked",
         n: @liked[:roast_logs_count],
-        message: I18n.t("services.recommended_roast.message.liked"),
         from_logs: true
       )
     end
@@ -39,33 +46,27 @@ class RecommendedRoast
     # 2) 全記録が十分あり、かつ低評価ばかりでないなら次点。
     #    平均が★3を下回る焙煎度しかない場合は実データを根拠にせず診断へ落とす。
     if @all[:roast_available] && @all[:roast_logs_count].to_i >= MIN_ALL &&
-       @all[:top_rated_average].to_f >= MIN_AVERAGE_RATING
+       @all[:top_rated_average].to_f >= MIN_AVERAGE_RATING && all_keys.present?
       return build(
-        roast_key: @all[:top_rated_roast_key],
-        label: @all[:top_rated_roast],
-        reason: I18n.t("services.recommended_roast.reason.all"),
+        roast_keys: all_keys,
+        labels: @all[:top_rated_roast_labels],
+        scope_key: "all",
         n: @all[:roast_logs_count],
-        message: I18n.t("services.recommended_roast.message.all"),
         from_logs: true
       )
     end
 
-    # 3) 記録が少ないか、低評価ばかりで根拠にできないなら診断（仮説）に戻す
+    # 3) 記録が少ないか、根拠にできないなら診断（仮説）に戻す
     if @taste_profile.present?
-      # 記録は十分あるのに低評価で弾かれた場合、「記録するほど近づきます」では
-      # なぜ実データが使われないのか伝わらないため文言を分ける
-      rejected_for_low_rating =
-        @all[:roast_available] && @all[:roast_logs_count].to_i >= MIN_ALL
       key = @taste_profile.preferred_roast.to_s
-      label = PreferenceSummary::ROAST_LABELS.fetch(@taste_profile.preferred_roast.to_s, "不明")
+      label = PreferenceSummary::ROAST_LABELS.fetch(key, "不明")
       return build(
-        roast_key: key,
-        label: label,
-        reason: I18n.t("services.recommended_roast.reason.diagnosis"),
+        roast_keys: [ key ],
+        labels: [ label ],
+        scope_key: "diagnosis",
         n: 0,
-        message: I18n.t("services.recommended_roast.message.diagnosis"),
         from_logs: false,
-        low_rated: rejected_for_low_rating
+        stalled: stalled_reason
       )
     end
 
@@ -74,20 +75,40 @@ class RecommendedRoast
 
   private
 
-  def build(roast_key:, label:, reason:, n:, message:, from_logs:, low_rated: false)
+  # 実データを根拠にできるか。3つ以上が同点なら、どれを勧めても同じで意味がない。
+  def decidable_keys(preference)
+    keys = preference[:top_rated_roast_keys].to_a
+    keys.size <= MAX_TIED ? keys : []
+  end
+
+  # 記録は十分あるのに実データを使えなかった理由。
+  # 「記録するほど近づきます」では、なぜ使われないのか伝わらないため文言を分ける。
+  # 件数を増やしても解消するとは限らないので、進捗も出さない。
+  def stalled_reason
+    return nil unless @all[:roast_available] && @all[:roast_logs_count].to_i >= MIN_ALL
+
+    return :undecided if decidable_keys(@all).empty?  # 3つ以上が同点
+
+    :low_rated if @all[:top_rated_average].to_f < MIN_AVERAGE_RATING
+  end
+
+  def build(roast_keys:, labels:, scope_key:, n:, from_logs:, stalled: nil)
     level = confidence_level(from_logs, n.to_i)
-    notice_key = (level == :hypothesis && low_rated) ? :low_rated : level
+    tied  = roast_keys.size > 1
+    suffix = tied ? "#{scope_key}_tied" : scope_key
+    notice_key = (level == :hypothesis && stalled) ? stalled : level
 
     {
       available: true,
-      roast_key: roast_key,
-      label: label,
-      reason: reason,
+      roast_keys: roast_keys,
+      labels: labels,
+      tied: tied,
+      reason: I18n.t("services.recommended_roast.reason.#{suffix}"),
       n: n,
-      message: message,
+      message: I18n.t("services.recommended_roast.message.#{suffix}"),
       confidence: level,
       notice: I18n.t("services.recommended_roast.notice.#{notice_key}", count: n.to_i),
-      progress: progress_for(level, low_rated)
+      progress: progress_for(level, stalled.present?)
     }
   end
 
@@ -99,8 +120,8 @@ class RecommendedRoast
   #
   # 記録を増やせば段階が進む状況でのみ返す。件数以外が理由で止まっている場合に
   # 「あとN件」と言うと、記録しても進まないという誤った期待を持たせるため。
-  def progress_for(level, low_rated)
-    return nil if low_rated                # 低評価が理由。件数では進まない
+  def progress_for(level, stalled)
+    return nil if stalled                  # 低評価・同点が理由。件数では進まない
     return nil unless roast_recorded?      # 焙煎度が未記録。件数では進まない
 
     recorded = @all[:roast_logs_count].to_i

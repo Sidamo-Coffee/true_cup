@@ -48,7 +48,7 @@ RSpec.describe DiagnosisGap do
       result = call
 
       expect(result[:roast][:diagnosed_key]).to eq "light"
-      expect(result[:roast][:actual_key]).to eq "dark"
+      expect(result[:roast][:actual_keys]).to eq [ "dark" ]
       expect(result[:roast][:match]).to be false
     end
 
@@ -56,7 +56,7 @@ RSpec.describe DiagnosisGap do
       3.times { log(roast: :light, rating: 5) }
       result = call
 
-      expect(result[:roast][:actual_key]).to eq "light"
+      expect(result[:roast][:actual_keys]).to eq [ "light" ]
       expect(result[:roast][:match]).to be true
     end
 
@@ -101,7 +101,39 @@ RSpec.describe DiagnosisGap do
         taste_profile: user.reload.taste_profile
       ).call
 
-      expect(call[:roast][:actual_key]).to eq recommended[:roast_key]
+      expect(call[:roast][:actual_keys]).to eq recommended[:roast_keys]
+    end
+  end
+
+  # #146 おすすめが2つ併記になる場合、ここで片方だけと突き合わせない
+  describe "評価が同点で、実際の好みが絞り込めない場合" do
+    it "診断結果が同点のどちらかなら「診断どおり」とみなすこと" do
+      # 並びの後ろ側（深煎り）を診断結果にする。先頭としか比べていないと落ちる
+      create(:taste_profile, :dark_like, user: user)
+      2.times { log(roast: :light) }
+      2.times { log(roast: :dark) }
+
+      expect(call[:roast][:actual_keys]).to eq [ "light", "dark" ]
+      expect(call[:roast][:match]).to be true
+    end
+
+    it "診断結果がどちらでもなければ、両方を並べて伝えること" do
+      create(:taste_profile, user: user, preferred_roast: :medium)
+      2.times { log(roast: :light) }
+      2.times { log(roast: :dark) }
+
+      expect(call[:roast][:match]).to be false
+      expect(call[:roast][:actual_label]).to eq "浅煎り・深煎り"
+    end
+
+    it "3つ以上が同点なら焙煎度の比較をしないこと" do
+      # おすすめ側も実データを根拠にしない。ここだけ「実際は◯◯」と言うと食い違う
+      create(:taste_profile, :light_like, user: user)
+      2.times { log(roast: :light) }
+      2.times { log(roast: :medium) }
+      2.times { log(roast: :dark) }
+
+      expect(call[:roast]).to be_nil
     end
   end
 

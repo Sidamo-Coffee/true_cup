@@ -24,7 +24,7 @@ RSpec.describe RecommendedRoast do
 
       it "★4以上の記録を根拠にすること" do
         result = call(taste_profile: user.reload.taste_profile)
-        expect(result[:roast_key]).to eq "light"
+        expect(result[:roast_keys]).to eq [ "light" ]
         expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.liked")
       end
     end
@@ -37,7 +37,7 @@ RSpec.describe RecommendedRoast do
 
       it "全記録を根拠にすること" do
         result = call(taste_profile: user.reload.taste_profile)
-        expect(result[:roast_key]).to eq "dark"
+        expect(result[:roast_keys]).to eq [ "dark" ]
         expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.all")
       end
     end
@@ -47,7 +47,7 @@ RSpec.describe RecommendedRoast do
 
       it "味覚診断を根拠にすること" do
         result = call(taste_profile: user.reload.taste_profile)
-        expect(result[:roast_key]).to eq "dark"
+        expect(result[:roast_keys]).to eq [ "dark" ]
         expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.diagnosis")
       end
     end
@@ -69,11 +69,11 @@ RSpec.describe RecommendedRoast do
     it "焙煎度不明の記録を根拠にせず、味覚診断にフォールバックすること" do
       result = call(taste_profile: user.reload.taste_profile)
       expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.diagnosis")
-      expect(result[:roast_key]).to eq "dark"
+      expect(result[:roast_keys]).to eq [ "dark" ]
     end
 
     it "「不明」を推薦しないこと" do
-      expect(call(taste_profile: user.reload.taste_profile)[:roast_key]).not_to eq "unknown"
+      expect(call(taste_profile: user.reload.taste_profile)[:roast_keys]).not_to include "unknown"
     end
   end
 
@@ -186,7 +186,7 @@ RSpec.describe RecommendedRoast do
 
       it "件数が多くても低評価の焙煎度は推薦しないこと" do
         result = call(taste_profile: user.reload.taste_profile)
-        expect(result[:roast_key]).to eq "light"
+        expect(result[:roast_keys]).to eq [ "light" ]
       end
     end
 
@@ -201,7 +201,7 @@ RSpec.describe RecommendedRoast do
         # 優先度1（★4以上）でも件数だけで決まっていた
         result = call(taste_profile: user.reload.taste_profile)
         expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.liked")
-        expect(result[:roast_key]).to eq "light"
+        expect(result[:roast_keys]).to eq [ "light" ]
       end
     end
 
@@ -214,7 +214,7 @@ RSpec.describe RecommendedRoast do
       it "実データを根拠にせず、味覚診断に戻すこと" do
         result = call(taste_profile: user.reload.taste_profile)
         expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.diagnosis")
-        expect(result[:roast_key]).to eq "light"
+        expect(result[:roast_keys]).to eq [ "light" ]
       end
 
       it "確からしさも仮説として扱うこと" do
@@ -232,7 +232,7 @@ RSpec.describe RecommendedRoast do
       it "1件だけの焙煎度が、複数件ある焙煎度を上回らないこと" do
         # 偶然の1杯が居座らないよう、2件以上ある焙煎度どうしで比べる
         result = call(taste_profile: user.reload.taste_profile)
-        expect(result[:roast_key]).to eq "dark"
+        expect(result[:roast_keys]).to eq [ "dark" ]
       end
     end
 
@@ -250,7 +250,7 @@ RSpec.describe RecommendedRoast do
       it "比較できる焙煎度が無ければ全体で評価の高いものを選ぶこと" do
         result = call(taste_profile: user.reload.taste_profile)
         expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.liked")
-        expect(result[:roast_key]).to eq "light"
+        expect(result[:roast_keys]).to eq [ "light" ]
       end
     end
 
@@ -263,7 +263,76 @@ RSpec.describe RecommendedRoast do
 
       it "件数の多い方を選ぶこと" do
         result = call(taste_profile: user.reload.taste_profile)
-        expect(result[:roast_key]).to eq "dark"
+        expect(result[:roast_keys]).to eq [ "dark" ]
+      end
+    end
+
+    # #146 同点を、説明できない基準で崩さない
+    context "評価も件数も同点の焙煎度が2つある場合" do
+      before do
+        2.times { log(roast: :light, rating: 5) }
+        2.times { log(roast: :dark,  rating: 5) }
+        create(:taste_profile, user: user)
+      end
+
+      it "2つとも推薦すること" do
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:roast_keys]).to eq [ "light", "dark" ]
+        expect(result[:labels]).to eq [ "浅煎り", "深煎り" ]
+        expect(result[:tied]).to be true
+      end
+
+      it "「最も評価が高い」とは言わないこと" do
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.liked_tied")
+        expect(result[:reason]).not_to include "最も高い"
+        expect(result[:message]).to eq I18n.t("services.recommended_roast.message.liked_tied")
+      end
+
+      it "実データを根拠にしていること（診断に戻さない）" do
+        expect(call(taste_profile: user.reload.taste_profile)[:confidence]).to eq :likely
+      end
+    end
+
+    context "同点の焙煎度が3つある場合" do
+      before do
+        2.times { log(roast: :light,       rating: 5) }
+        2.times { log(roast: :medium,      rating: 5) }
+        2.times { log(roast: :medium_dark, rating: 5) }
+        create(:taste_profile, user: user)
+      end
+
+      it "実データを根拠にせず、味覚診断に戻すこと" do
+        # 4段階しかないため、3つ並んだ時点で「どれでもよい」と変わらない
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:confidence]).to eq :hypothesis
+        expect(result[:roast_keys]).to eq [ user.reload.taste_profile.preferred_roast.to_s ]
+      end
+
+      it "絞り込めていないことを伝えること" do
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.undecided")
+      end
+
+      it "残り件数を約束しないこと" do
+        # 記録を増やしても同点が崩れるとは限らない
+        expect(call(taste_profile: user.reload.taste_profile)[:progress]).to be_nil
+      end
+    end
+
+    context "同点の焙煎度が3つあり、診断も無い場合" do
+      before do
+        2.times { log(roast: :light,       rating: 5) }
+        2.times { log(roast: :medium,      rating: 5) }
+        2.times { log(roast: :medium_dark, rating: 5) }
+      end
+
+      it "推薦しないこと" do
+        expect(call(taste_profile: nil)[:available]).to be false
       end
     end
 
