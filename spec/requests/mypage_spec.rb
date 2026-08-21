@@ -119,6 +119,38 @@ RSpec.describe "Mypage", type: :request do
         end
       end
 
+      context "同点のまま、件数だけ十分に集まった場合" do
+        before do
+          create(:taste_profile, user: user)
+          5.times { create(:coffee_log, :light_roast, user: user, overall_rating: 5) }
+          5.times { create(:coffee_log, :dark_roast,  user: user, overall_rating: 5) }
+        end
+
+        it "進捗バーが「十分な記録が集まりました」で終わらせないこと" do
+          # 件数は満たしているが、どちらが好きかは決まっていない。
+          # バーだけ「完成」と言うと、すぐ上の「まだ分かれていません」と食い違う
+          get mypage_path
+
+          expect(response.body).to include(
+            I18n.t("services.recommended_roast.progress.done_tied", raise: true)
+          )
+          expect(response.body).not_to include(
+            I18n.t("services.recommended_roast.progress.done", raise: true)
+          )
+        end
+
+        it "段階のラベルも言い切らないこと" do
+          get mypage_path
+
+          expect(response.body).to include(
+            I18n.t("services.recommended_roast.progress.label_tied.stable", raise: true)
+          )
+          expect(response.body).not_to include(
+            I18n.t("services.recommended_roast.progress.label.stable", raise: true)
+          )
+        end
+      end
+
       context "評価が同点の焙煎度が3つある場合" do
         before do
           create(:taste_profile, user: user)

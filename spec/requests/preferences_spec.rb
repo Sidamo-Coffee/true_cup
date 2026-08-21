@@ -136,7 +136,9 @@ RSpec.describe "Preferences", type: :request do
           get preferences_path
 
           expect(response.body).to include(I18n.t("preferences.show.gap.lead_roast_undecided", raise: true))
-          expect(response.body).not_to include(I18n.t("preferences.show.gap.lead_taste_only_aligned"))
+          expect(response.body).not_to include(
+            I18n.t("preferences.show.gap.lead_taste_only_aligned", raise: true)
+          )
           expect(response.body).not_to include(
             ERB::Util.html_escape(
               I18n.t("preferences.show.gap.lead_aligned", diagnosed: "浅煎り", actual: "浅煎り")

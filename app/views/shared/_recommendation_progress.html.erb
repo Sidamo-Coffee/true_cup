@@ -1,8 +1,13 @@
 <%# 次の段階までの進み具合（#122）。progress が nil のときは呼び出し側で出し分ける %>
+<%# 同点で絞り込めていないときは「安定した傾向」「十分な記録が集まりました」と
+    言い切らない。件数は足りていても、まだ決まっていないため（#146） %>
+<% tied = local_assigns.fetch(:tied, false) %>
 <div class="space-y-2">
   <div class="flex items-baseline justify-between gap-2">
     <p class="text-xs font-semibold text-amber-800">
-      <%= t("services.recommended_roast.progress.label.#{progress[:stage]}") %>
+      <% label_scope = tied ? "label_tied" : "label" %>
+      <%= t("services.recommended_roast.progress.#{label_scope}.#{progress[:stage]}",
+            default: t("services.recommended_roast.progress.label.#{progress[:stage]}")) %>
     </p>
     <p class="shrink-0 text-xs text-gray-500">
       <%= progress[:current] %> / <%= progress[:target] %>
@@ -16,7 +21,7 @@
 
   <p class="text-xs text-gray-500 leading-relaxed">
     <% if progress[:remaining].zero? %>
-      <%= t("services.recommended_roast.progress.done") %>
+      <%= t("services.recommended_roast.progress.#{tied ? 'done_tied' : 'done'}") %>
     <% else %>
       <%= t("services.recommended_roast.progress.remaining.#{progress[:stage]}", count: progress[:remaining]) %>
     <% end %>

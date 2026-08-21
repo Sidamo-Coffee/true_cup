@@ -345,6 +345,21 @@ RSpec.describe RecommendedRoast do
       end
     end
 
+    context "同点が2つあり、裏付けがまだ少ない場合" do
+      before do
+        2.times { log(roast: :light, rating: 5) }
+        2.times { log(roast: :dark,  rating: 5) }
+        create(:taste_profile, user: user)
+      end
+
+      it "暫定であることと、絞り込めていないことを両方伝えること" do
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:confidence]).to eq :likely
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.likely_tied", count: 4, raise: true)
+      end
+    end
+
     context "同点が2つあり、裏付けが十分な場合" do
       before do
         5.times { log(roast: :light, rating: 5) }
@@ -374,7 +389,26 @@ RSpec.describe RecommendedRoast do
         # 全部★2で並んでいる状態で「評価を上げると」と促しても行動につながらない
         result = call(taste_profile: user.reload.taste_profile)
 
-        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.low_rated")
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.low_rated", raise: true)
+      end
+    end
+
+    context "診断を根拠にする場合" do
+      before do
+        1.times { log(roast: :light, rating: 5) }
+        create(:taste_profile, user: user)
+      end
+
+      it "併記にはならないこと" do
+        # 診断結果は1つしかない。ここが併記になると hypothesis_tied という
+        # 未定義の文言を引いて translation missing が画面に出る
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:confidence]).to eq :hypothesis
+        expect(result[:tied]).to be false
+        expect(result[:roast_keys].size).to eq 1
+        expect(result[:notice]).not_to include "translation missing"
+        expect(result[:reason]).not_to include "translation missing"
       end
     end
 
@@ -401,7 +435,7 @@ RSpec.describe RecommendedRoast do
         # 11件記録しているユーザーに「記録するほど」では、
         # なぜ実データが使われないのか伝わらない
         result = call(taste_profile: user.reload.taste_profile)
-        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.low_rated")
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.low_rated", raise: true)
       end
     end
   end

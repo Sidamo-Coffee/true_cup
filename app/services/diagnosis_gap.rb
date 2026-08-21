@@ -32,9 +32,10 @@ class DiagnosisGap
       available: true,
       logs_count: @liked[:logs_count],
       roast: roast,
-      # 焙煎度を比べなかった理由。記録が「不明」ばかりなのか、同点で絞れないのかで
-      # 伝える内容が変わる。後者で「一致しています」と言うとおすすめと食い違う（#146）
-      roast_undecided: roast.nil? && rated_keys.size > RecommendedRoast::MAX_TIED,
+      # 焙煎度を比べなかった理由。記録が「不明」ばかり・件数不足なのか、
+      # 同点で絞れないのかで伝える内容が変わる。後者で「一致しています」と
+      # 言うとおすすめと食い違う（#146）
+      roast_undecided: roast.nil? && enough_roast_logs? && rated_keys.size > RecommendedRoast::MAX_TIED,
       axes: axes,
       verdict: verdict(roast, axes)
     }
@@ -60,9 +61,13 @@ class DiagnosisGap
   # 同点が MAX_TIED を超える場合は、おすすめ側も実データを根拠にしない。
   # ここだけ「実際は◯◯」と言うと、同じ画面で食い違う（#146）。
   def roast_comparable?
-    @liked[:roast_available] &&
-      @liked[:roast_logs_count].to_i >= MIN_LOGS &&
-      rated_keys.size.between?(1, RecommendedRoast::MAX_TIED)
+    enough_roast_logs? && rated_keys.size.between?(1, RecommendedRoast::MAX_TIED)
+  end
+
+  # 件数不足を「同点で絞れない」と取り違えないための条件。
+  # いまは3キー並ぶには3件必要なので偶然重なるが、閾値を上げた途端にずれる。
+  def enough_roast_logs?
+    @liked[:roast_available] && @liked[:roast_logs_count].to_i >= MIN_LOGS
   end
 
   def rated_keys

@@ -112,8 +112,6 @@ class RecommendedRoast
       roast_keys: roast_keys,
       labels: labels,
       tied: tied,
-      # 実データを使えなかった理由。DiagnosisGap が同じ判断を共有するために返す
-      stalled: stalled,
       reason: I18n.t("services.recommended_roast.reason.#{suffix}"),
       n: n,
       message: I18n.t("services.recommended_roast.message.#{suffix}"),

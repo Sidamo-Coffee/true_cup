@@ -39,11 +39,7 @@ class PreferenceSummary
 
     # 同数の焙煎度に別々の順位を振ると、並び順だけで優劣がついたように見える。
     # 件数が同じなら同順位にする（#144）。
-    #
-    # 第2キーに焙煎度の定義順を入れて並びを決定づける。GROUP BY は順序を保証せず、
-    # Ruby の sort_by も同値では入力順のままなので、これが無いと同数のときの
-    # 表示順（見出しの左右・Top3 の切り出し）が実行のたびに変わりうる。
-    sorted_roasts = roast_counts.sort_by { |k, c| [ -c, roast_order(k) ] }
+    sorted_roasts = sorted_roast_counts(roast_counts)
 
     ranking = build_ranking(sorted_roasts, total)
 
@@ -204,6 +200,15 @@ class PreferenceSummary
         count: c
       }
     end
+  end
+
+  # 件数の多い順。同数なら焙煎度の定義順。
+  #
+  # 第2キーが無いと、同数のときの表示順（見出しの左右・Top3 の切り出し）が
+  # 実行のたびに変わりうる。GROUP BY は順序を保証せず、Ruby の sort_by も
+  # 同値では入力順のままのため。
+  def sorted_roast_counts(roast_counts)
+    roast_counts.sort_by { |k, c| [ -c, roast_order(k) ] }
   end
 
   def roast_order(key)

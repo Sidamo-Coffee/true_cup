@@ -265,6 +265,16 @@ RSpec.describe PreferenceSummary do
       end
     end
 
+    it "同数の並び順が、集計の返り順によらないこと" do
+      # 記録から組み立てるとたまたま定義順で返るため、並べ替えを消しても気づけない。
+      # 逆順のハッシュを直接渡して、第2キーが効いていることを確かめる
+      summary = described_class.new(user)
+      reversed = { "dark" => 2, "light" => 2, "medium" => 1 }
+
+      expect(summary.send(:sorted_roast_counts, reversed).map(&:first))
+        .to eq [ "light", "dark", "medium" ]
+    end
+
     it "3位と同数の焙煎度をランキングから切り落とさないこと" do
       # 同順位にした以上、「同じ #1 なのに1件だけ載らない」のは説明がつかない
       %i[light medium medium_dark dark].each { |r| log(roast: r, rating: 4) }

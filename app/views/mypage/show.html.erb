@@ -217,7 +217,8 @@
         何を修飾しているか分かるようおすすめカード側に置いている（#143） %>
     <% if @recommended_roast[:progress].present? %>
       <div class="mt-4">
-        <%= render "shared/recommendation_progress", progress: @recommended_roast[:progress] %>
+        <%= render "shared/recommendation_progress", progress: @recommended_roast[:progress],
+                   tied: @recommended_roast[:tied] %>
       </div>
     <% end %>
   </section>
