@@ -32,6 +32,9 @@ class DiagnosisGap
       available: true,
       logs_count: @liked[:logs_count],
       roast: roast,
+      # 焙煎度を比べなかった理由。記録が「不明」ばかりなのか、同点で絞れないのかで
+      # 伝える内容が変わる。後者で「一致しています」と言うとおすすめと食い違う（#146）
+      roast_undecided: roast.nil? && rated_keys.size > RecommendedRoast::MAX_TIED,
       axes: axes,
       verdict: verdict(roast, axes)
     }
@@ -40,7 +43,7 @@ class DiagnosisGap
   private
 
   def unavailable
-    { available: false, roast: nil, axes: [], verdict: nil }
+    { available: false, roast: nil, roast_undecided: false, axes: [], verdict: nil }
   end
 
   # 味の比較は焙煎度が不明でも成り立つため logs_count で判定する。

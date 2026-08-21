@@ -135,6 +135,25 @@ RSpec.describe DiagnosisGap do
 
       expect(call[:roast]).to be_nil
     end
+
+    it "比較しなかった理由が「絞り込めていない」と分かること" do
+      # 焙煎度が「不明」ばかりの場合と同じ扱いにすると、
+      # 「診断の傾向とおおむね一致しています」と誤って伝えてしまう
+      create(:taste_profile, :light_like, user: user)
+      2.times { log(roast: :light) }
+      2.times { log(roast: :medium) }
+      2.times { log(roast: :dark) }
+
+      expect(call[:roast_undecided]).to be true
+    end
+
+    it "焙煎度が不明なだけの場合は「絞り込めていない」扱いにしないこと" do
+      create(:taste_profile, :light_like, user: user)
+      3.times { log(roast: :unknown) }
+
+      expect(call[:roast]).to be_nil
+      expect(call[:roast_undecided]).to be false
+    end
   end
 
   describe "味の比較" do

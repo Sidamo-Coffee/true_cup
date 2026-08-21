@@ -286,9 +286,9 @@ RSpec.describe RecommendedRoast do
       it "「最も評価が高い」とは言わないこと" do
         result = call(taste_profile: user.reload.taste_profile)
 
-        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.liked_tied")
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.liked_tied", raise: true)
         expect(result[:reason]).not_to include "最も高い"
-        expect(result[:message]).to eq I18n.t("services.recommended_roast.message.liked_tied")
+        expect(result[:message]).to eq I18n.t("services.recommended_roast.message.liked_tied", raise: true)
       end
 
       it "実データを根拠にしていること（診断に戻さない）" do
@@ -315,12 +315,66 @@ RSpec.describe RecommendedRoast do
       it "絞り込めていないことを伝えること" do
         result = call(taste_profile: user.reload.taste_profile)
 
-        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.undecided")
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.undecided", raise: true)
       end
 
       it "残り件数を約束しないこと" do
         # 記録を増やしても同点が崩れるとは限らない
         expect(call(taste_profile: user.reload.taste_profile)[:progress]).to be_nil
+      end
+    end
+
+    context "★4以上は足りないが、全記録では同点が2つある場合" do
+      before do
+        # ★4以上は2件（閾値3未満）なので all スコープに落ちる
+        3.times { log(roast: :light, rating: 3) }
+        1.times { log(roast: :light, rating: 5) }
+        3.times { log(roast: :dark,  rating: 3) }
+        1.times { log(roast: :dark,  rating: 5) }
+        create(:taste_profile, user: user)
+      end
+
+      # raise: true は、文言のキーが消えたときにここで落とすため。
+      # 素の I18n.t だと両辺とも "translation missing" になって一致してしまう
+      it "全記録を根拠に、2つとも推薦すること" do
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:roast_keys]).to eq [ "light", "dark" ]
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.all_tied", raise: true)
+        expect(result[:message]).to eq I18n.t("services.recommended_roast.message.all_tied", raise: true)
+      end
+    end
+
+    context "同点が2つあり、裏付けが十分な場合" do
+      before do
+        5.times { log(roast: :light, rating: 5) }
+        5.times { log(roast: :dark,  rating: 5) }
+        create(:taste_profile, user: user)
+      end
+
+      it "「傾向は安定しています」とは言い切らないこと" do
+        # 絞り込めていないのに安定と言うと、もう決まったように読める
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:confidence]).to eq :stable
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.stable_tied", count: 10, raise: true)
+        expect(result[:notice]).not_to eq I18n.t("services.recommended_roast.notice.stable", count: 10)
+      end
+    end
+
+    context "同点が3つあり、いずれも低評価の場合" do
+      before do
+        2.times { log(roast: :light,       rating: 2) }
+        2.times { log(roast: :medium,      rating: 2) }
+        2.times { log(roast: :medium_dark, rating: 2) }
+        create(:taste_profile, user: user)
+      end
+
+      it "「同点で絞れない」ではなく「好みに合うものが無い」と伝えること" do
+        # 全部★2で並んでいる状態で「評価を上げると」と促しても行動につながらない
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.low_rated")
       end
     end
 

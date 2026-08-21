@@ -62,8 +62,8 @@
         </p>
       <% end %>
       <%# 2つ併記のときは、どちらのガイドか分かるよう焙煎度ごとに区切る %>
-      <% @roast_guides.each do |guide| %>
-        <div class="mt-4 space-y-3 <%= "border-t pt-4" if @recommended_roast[:tied] %>">
+      <% @roast_guides.each_with_index do |guide, idx| %>
+        <div class="mt-4 space-y-3 <%= "border-t pt-4" if @recommended_roast[:tied] && idx.positive? %>">
           <% if @recommended_roast[:tied] %>
             <p class="text-sm font-semibold text-amber-800"><%= guide[:label] %></p>
           <% end %>

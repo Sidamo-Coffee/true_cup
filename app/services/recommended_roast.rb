@@ -84,25 +84,36 @@ class RecommendedRoast
   # 記録は十分あるのに実データを使えなかった理由。
   # 「記録するほど近づきます」では、なぜ使われないのか伝わらないため文言を分ける。
   # 件数を増やしても解消するとは限らないので、進捗も出さない。
+  #
+  # 低評価を先に見る。全部★2で3つ並んだ状態は「同点で絞れない」より
+  # 「まだ好みに合うものが無い」の方が実態に近く、次の一手も変わるため。
   def stalled_reason
     return nil unless @all[:roast_available] && @all[:roast_logs_count].to_i >= MIN_ALL
 
-    return :undecided if decidable_keys(@all).empty?  # 3つ以上が同点
+    return :low_rated if @all[:top_rated_average].to_f < MIN_AVERAGE_RATING
 
-    :low_rated if @all[:top_rated_average].to_f < MIN_AVERAGE_RATING
+    :undecided if decidable_keys(@all).empty?
   end
 
   def build(roast_keys:, labels:, scope_key:, n:, from_logs:, stalled: nil)
     level = confidence_level(from_logs, n.to_i)
     tied  = roast_keys.size > 1
     suffix = tied ? "#{scope_key}_tied" : scope_key
-    notice_key = (level == :hypothesis && stalled) ? stalled : level
+    # 同点のまま「安定しています」と言うと、絞り込めたように読める
+    notice_key =
+      if level == :hypothesis && stalled
+        stalled
+      else
+        tied ? "#{level}_tied" : level
+      end
 
     {
       available: true,
       roast_keys: roast_keys,
       labels: labels,
       tied: tied,
+      # 実データを使えなかった理由。DiagnosisGap が同じ判断を共有するために返す
+      stalled: stalled,
       reason: I18n.t("services.recommended_roast.reason.#{suffix}"),
       n: n,
       message: I18n.t("services.recommended_roast.message.#{suffix}"),

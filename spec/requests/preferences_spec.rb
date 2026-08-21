@@ -122,6 +122,34 @@ RSpec.describe "Preferences", type: :request do
         end
       end
 
+      # #146 焙煎度が同点で絞り込めない場合
+      context "★4以上の記録で、3つの焙煎度が同点の場合" do
+        before do
+          create(:taste_profile, :light_like, user: user)
+          2.times { create(:coffee_log, :light_roast, user: user, overall_rating: 5) }
+          2.times { create(:coffee_log, user: user, roast_level: :medium, overall_rating: 5) }
+          2.times { create(:coffee_log, :dark_roast,  user: user, overall_rating: 5) }
+        end
+
+        it "「診断どおり」とも「実際は◯◯」とも言わないこと" do
+          # おすすめは「絞り込めていません」と言っている。ここで一致を主張すると食い違う
+          get preferences_path
+
+          expect(response.body).to include(I18n.t("preferences.show.gap.lead_roast_undecided", raise: true))
+          expect(response.body).not_to include(I18n.t("preferences.show.gap.lead_taste_only_aligned"))
+          expect(response.body).not_to include(
+            ERB::Util.html_escape(
+              I18n.t("preferences.show.gap.lead_aligned", diagnosed: "浅煎り", actual: "浅煎り")
+            )
+          )
+        end
+
+        it "味の傾向は引き続き並べること" do
+          get preferences_path
+          expect(response.body).to include(I18n.t("preferences.show.gap.axis.bitterness"))
+        end
+      end
+
       context "焙煎度は診断どおりだが、味だけがズレている場合" do
         before do
           create(:taste_profile, user: user, preferred_roast: :dark,

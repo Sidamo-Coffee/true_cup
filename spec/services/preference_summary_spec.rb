@@ -157,7 +157,7 @@ RSpec.describe PreferenceSummary do
       expect(result[:top_rated_tied]).to be true
     end
 
-    it "同点の並び順が焙煎度の定義順で決まること" do
+    it "記録日が違っても、同点なら片方を代表にしないこと" do
       # 記録日で崩す旧タイブレークは廃止した。同じ日に記録すると決着せず、
       # 最後は enum の定義順という説明できない基準になっていた
       log(roast: :dark,  rating: 5, drank_on: Date.current)
@@ -166,6 +166,16 @@ RSpec.describe PreferenceSummary do
       log(roast: :light, rating: 5, drank_on: Date.current - 30)
 
       expect(described_class.new(user).call[:top_rated_roast_keys]).to eq [ "light", "dark" ]
+    end
+
+    it "同点の並び順が、集計の返り順によらず焙煎度の定義順で決まること" do
+      # GROUP BY は順序を保証しない。記録から組み立てると、たまたま定義順で
+      # 返るせいで並べ替えを消しても気づけないため、逆順のハッシュを直接渡す
+      summary = described_class.new(user)
+      avgs   = { "dark" => 5.0, "light" => 5.0 }
+      counts = { "dark" => 2, "light" => 2 }
+
+      expect(summary.send(:top_rated_roast_keys, avgs, counts)).to eq [ "light", "dark" ]
     end
 
     it "同点でなければ絞り込めていると分かること" do

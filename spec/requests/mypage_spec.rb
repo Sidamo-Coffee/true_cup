@@ -133,12 +133,6 @@ RSpec.describe "Mypage", type: :request do
             ERB::Util.html_escape(I18n.t("services.recommended_roast.notice.undecided"))
           )
         end
-
-        it "診断と実際のズレは表示しないこと" do
-          # 実際の好みが定まらないのに「実際は◯◯」と言うと、おすすめと食い違う
-          get preferences_path
-          expect(response.body).not_to include(I18n.t("preferences.show.gap.rediagnose"))
-        end
       end
 
       context "焙煎度が全て不明の記録しかない場合" do
