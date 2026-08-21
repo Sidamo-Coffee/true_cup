@@ -119,6 +119,31 @@ RSpec.describe "Mypage", type: :request do
         end
       end
 
+      context "同点のまま、件数がまだ足りない場合" do
+        before do
+          create(:taste_profile, user: user)
+          2.times { create(:coffee_log, :light_roast, user: user, overall_rating: 5) }
+          2.times { create(:coffee_log, :dark_roast,  user: user, overall_rating: 5) }
+        end
+
+        it "「あとN件で安定します」と約束しないこと" do
+          # 同点のまま10件に達しても、そこで出るのは「まだ分かれていません」。
+          # 件数さえ増えれば安定する、という約束は守れない
+          get mypage_path
+
+          expect(response.body).to include(
+            ERB::Util.html_escape(
+              I18n.t("services.recommended_roast.progress.remaining_tied.likely", count: 6, raise: true)
+            )
+          )
+          expect(response.body).not_to include(
+            ERB::Util.html_escape(
+              I18n.t("services.recommended_roast.progress.remaining.likely", count: 6, raise: true)
+            )
+          )
+        end
+      end
+
       context "同点のまま、件数だけ十分に集まった場合" do
         before do
           create(:taste_profile, user: user)

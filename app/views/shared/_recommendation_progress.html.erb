@@ -23,7 +23,11 @@
     <% if progress[:remaining].zero? %>
       <%= t("services.recommended_roast.progress.#{tied ? 'done_tied' : 'done'}") %>
     <% else %>
-      <%= t("services.recommended_roast.progress.remaining.#{progress[:stage]}", count: progress[:remaining]) %>
+      <% remaining_scope = tied ? "remaining_tied" : "remaining" %>
+      <%= t("services.recommended_roast.progress.#{remaining_scope}.#{progress[:stage]}",
+            count: progress[:remaining],
+            default: t("services.recommended_roast.progress.remaining.#{progress[:stage]}",
+                       count: progress[:remaining])) %>
     <% end %>
   </p>
 </div>
