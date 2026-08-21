@@ -32,38 +32,61 @@ RSpec.describe "Preferences", type: :request do
 
 
 
-      # #122 次の段階までの進み具合
-      context "実データを根拠にしているが安定していない場合" do
+
+      # #143 おすすめに関する表示はマイページに集約する
+      context "おすすめの確からしさと進み具合" do
         before do
           create(:taste_profile, user: user)
           4.times { create(:coffee_log, :dark_roast, user: user, overall_rating: 5) }
         end
 
-        it "安定するまでの残り件数が表示されること" do
+        it "確からしさを表示しないこと" do
           get preferences_path
-          expect(response.body).to include(
+          expect(response.body).not_to include(
+            ERB::Util.html_escape(I18n.t("services.recommended_roast.notice.likely", count: 4))
+          )
+        end
+
+        it "進み具合も表示しないこと" do
+          # 「あと N 件でおすすめを出せます」もおすすめの話。
+          # おすすめ本体が無いページに置くと、直前の見出しの説明に読める
+          get preferences_path
+          expect(response.body).not_to include(I18n.t("services.recommended_roast.progress.label.likely"))
+        end
+
+        it "★4以上タブでも表示しないこと" do
+          # 進み具合の分子は全記録ベースで、このタブの「3件」とは意味が違う
+          get preferences_path(scope: "liked")
+          expect(response.body).not_to include(I18n.t("services.recommended_roast.progress.label.likely"))
+        end
+      end
+
+      # #144 件数が同数のとき
+      context "最も飲んでいる焙煎度が同数の場合" do
+        before do
+          2.times { create(:coffee_log, :light_roast, user: user, overall_rating: 2) }
+          2.times { create(:coffee_log, :dark_roast, user: user, overall_rating: 5) }
+        end
+
+        it "片方を「最も飲んでいる」とは表示しないこと" do
+          get preferences_path
+          expect(response.body).not_to include(
             ERB::Util.html_escape(
-              I18n.t("services.recommended_roast.progress.remaining.likely", count: 6)
+              I18n.t("preferences.show.summary.text", roast: "浅煎り",
+                     suffix: I18n.t("preferences.show.summary.suffix.all"))
             )
           )
         end
 
-        it "現在地が分かること" do
+        it "同じくらい飲んでいることを伝えること" do
+          # 焙煎度名はランキングにも出るため、見出しの文ごと突き合わせる
           get preferences_path
-          expect(response.body).to include("4 / #{RecommendedRoast::STABLE_MIN}")
-        end
-      end
-
-      context "記録を増やしても段階が進まない場合" do
-        before do
-          create(:taste_profile, user: user)
-          # 低評価ばかりで、件数を増やしても実データを根拠にできない
-          10.times { create(:coffee_log, :dark_roast, user: user, overall_rating: 2) }
-        end
-
-        it "残り件数を約束しないこと" do
-          get preferences_path
-          expect(response.body).not_to include(I18n.t("services.recommended_roast.progress.label.hypothesis"))
+          expect(response.body).to include(
+            ERB::Util.html_escape(
+              I18n.t("preferences.show.summary.tied_two", first: "浅煎り", second: "深煎り",
+                     suffix: I18n.t("preferences.show.summary.suffix_tied.all"))
+            )
+          )
         end
       end
 
@@ -203,14 +226,15 @@ RSpec.describe "Preferences", type: :request do
           expect(response.body).not_to include(I18n.t("preferences.show.summary.suffix.all"))
         end
 
-        it "焙煎度の傾向が出せない以上、おすすめが安定しているとは表示しないこと" do
+        it "おすすめの確からしさは表示しないこと" do
+          # おすすめ本体はこのページに無い。確からしさだけ置くと、
+          # すぐ上の見出しを修飾しているように読める（#143）
           create(:taste_profile, user: user)
           get preferences_path
 
-          expect(response.body).to include(
+          expect(response.body).not_to include(
             I18n.t("services.recommended_roast.notice.hypothesis")
           )
-          expect(response.body).not_to include("安定しています")
         end
       end
 

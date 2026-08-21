@@ -25,7 +25,7 @@ RSpec.describe PreferenceSummary do
 
     it "最も件数の多い焙煎度をサマリーとすること" do
       result = described_class.new(user).call
-      expect(result[:summary_roast_key]).to eq "light"
+      expect(result[:summary_roast_keys]).to eq [ "light" ]
     end
 
     it "焙煎度の円グラフに全ての焙煎度が含まれること" do
@@ -44,7 +44,7 @@ RSpec.describe PreferenceSummary do
       it "★4以上の記録だけを集計すること" do
         result = described_class.new(user, scope: :liked).call
         expect(result[:logs_count]).to eq 3
-        expect(result[:summary_roast_key]).to eq "light"
+        expect(result[:summary_roast_keys]).to eq [ "light" ]
       end
     end
   end
@@ -70,7 +70,7 @@ RSpec.describe PreferenceSummary do
         result = described_class.new(user).call
         expect(result[:roast_available]).to be false
         expect(result[:roast_logs_count]).to eq 0
-        expect(result[:summary_roast_key]).to be_nil
+        expect(result[:summary_roast_keys]).to eq []
       end
     end
 
@@ -95,7 +95,7 @@ RSpec.describe PreferenceSummary do
         result = described_class.new(user).call
         expect(result[:roast_available]).to be true
         expect(result[:roast_logs_count]).to eq 3
-        expect(result[:summary_roast_key]).to eq "light"
+        expect(result[:summary_roast_keys]).to eq [ "light" ]
       end
 
       it "円グラフに「不明」を含めないこと" do
@@ -136,7 +136,7 @@ RSpec.describe PreferenceSummary do
       2.times { log(roast: :light, rating: 5) }
       result = described_class.new(user).call
 
-      expect(result[:summary_roast_key]).to eq "dark"     # よく飲んでいるのは深煎り
+      expect(result[:summary_roast_keys]).to eq [ "dark" ] # よく飲んでいるのは深煎り
       expect(result[:top_rated_roast_key]).to eq "light"  # 評価が高いのは浅煎り
       expect(result[:top_rated_average]).to eq 5.0
     end
@@ -171,6 +171,125 @@ RSpec.describe PreferenceSummary do
       3.times { log(roast: :unknown, rating: 5) }
       2.times { log(roast: :dark,    rating: 3) }
       expect(described_class.new(user).call[:top_rated_roast_key]).to eq "dark"
+    end
+  end
+
+  # #144 件数が同数のときは、片方を「最も」と呼ばない
+  describe "最も飲んでいる焙煎度が一つに定まらない場合" do
+    it "同数の焙煎度をすべて返すこと" do
+      2.times { log(roast: :light, rating: 2) }
+      2.times { log(roast: :dark,  rating: 5) }
+      1.times { log(roast: :medium_dark, rating: 4) }
+      result = described_class.new(user).call
+
+      expect(result[:summary_roast_keys]).to contain_exactly("light", "dark")
+      expect(result[:summary_tied]).to be true
+    end
+
+    it "同数が3つ以上でもすべて返すこと" do
+      %i[light medium dark].each { |r| log(roast: r, rating: 4) }
+      result = described_class.new(user).call
+
+      expect(result[:summary_roast_keys].size).to eq 3
+      expect(result[:summary_tied]).to be true
+    end
+
+    it "一つに定まる場合は同数扱いにしないこと" do
+      3.times { log(roast: :dark,  rating: 5) }
+      1.times { log(roast: :light, rating: 5) }
+      result = described_class.new(user).call
+
+      expect(result[:summary_roast_keys]).to eq [ "dark" ]
+      expect(result[:summary_tied]).to be false
+      expect(result[:summary_roast]).to eq "深煎り"
+    end
+
+    it "記録日が違っても、同数なら片方を代表にしないこと" do
+      # 記録日で決める旧タイブレークは廃止した。同じ日に複数杯を記録すると
+      # 決着せず、実質 enum の定義順で決まってしまうため（#144）
+      log(roast: :light, rating: 4, drank_on: Date.current - 10)
+      log(roast: :light, rating: 4, drank_on: Date.current - 10)
+      log(roast: :dark,  rating: 4, drank_on: Date.current)
+      log(roast: :dark,  rating: 4, drank_on: Date.current)
+      result = described_class.new(user).call
+
+      expect(result[:summary_roast_keys]).to eq [ "light", "dark" ]
+      expect(result[:summary_tied]).to be true
+    end
+
+    it "同数の並び順が焙煎度の定義順で決まること" do
+      # GROUP BY は順序を保証しない。見出しの左右が実行のたびに入れ替わらないよう固定する
+      log(roast: :dark,  rating: 4)
+      log(roast: :light, rating: 4)
+
+      2.times do
+        expect(described_class.new(user).call[:summary_roast_labels]).to eq [ "浅煎り", "深煎り" ]
+      end
+    end
+
+    it "3位と同数の焙煎度をランキングから切り落とさないこと" do
+      # 同順位にした以上、「同じ #1 なのに1件だけ載らない」のは説明がつかない
+      %i[light medium medium_dark dark].each { |r| log(roast: r, rating: 4) }
+      ranking = described_class.new(user).call[:ranking]
+
+      expect(ranking.map { |r| r[:rank] }).to eq [ 1, 1, 1, 1 ]
+      expect(ranking.map { |r| r[:label] }).to include "深煎り"
+    end
+
+    it "3位が同数なら、4件目も同じ順位で載せること" do
+      3.times { log(roast: :dark, rating: 4) }
+      2.times { log(roast: :light, rating: 4) }
+      1.times { log(roast: :medium, rating: 4) }
+      1.times { log(roast: :medium_dark, rating: 4) }
+      ranking = described_class.new(user).call[:ranking]
+
+      expect(ranking.map { |r| r[:rank] }).to eq [ 1, 2, 3, 3 ]
+    end
+
+    it "4位が同数でなければ、従来どおり3件で打ち切ること" do
+      4.times { log(roast: :dark, rating: 4) }
+      3.times { log(roast: :light, rating: 4) }
+      2.times { log(roast: :medium, rating: 4) }
+      1.times { log(roast: :medium_dark, rating: 4) }
+      ranking = described_class.new(user).call[:ranking]
+
+      expect(ranking.map { |r| r[:rank] }).to eq [ 1, 2, 3 ]
+      expect(ranking.map { |r| r[:label] }).not_to include "中深煎り"
+    end
+
+    it "「最も飲まれている焙煎度です」とは説明しないこと" do
+      2.times { log(roast: :light, rating: 2) }
+      2.times { log(roast: :dark,  rating: 5) }
+      result = described_class.new(user).call
+
+      expect(result[:reason]).not_to include "最も飲まれている"
+      expect(result[:reason]).to include "4件"
+    end
+
+    it "同数でなければ従来どおり「最も飲まれている」と説明すること" do
+      3.times { log(roast: :dark,  rating: 5) }
+      1.times { log(roast: :light, rating: 5) }
+      result = described_class.new(user).call
+
+      expect(result[:reason]).to include "最も飲まれている"
+    end
+
+    it "ランキングでは同数の焙煎度を同順位にすること" do
+      2.times { log(roast: :light, rating: 2) }
+      2.times { log(roast: :dark,  rating: 5) }
+      1.times { log(roast: :medium_dark, rating: 4) }
+      ranks = described_class.new(user).call[:ranking].map { |r| r[:rank] }
+
+      expect(ranks).to eq [ 1, 1, 3 ]
+    end
+
+    it "同数でなければ順位は連番になること" do
+      3.times { log(roast: :dark,  rating: 5) }
+      2.times { log(roast: :light, rating: 5) }
+      1.times { log(roast: :medium, rating: 5) }
+      ranks = described_class.new(user).call[:ranking].map { |r| r[:rank] }
+
+      expect(ranks).to eq [ 1, 2, 3 ]
     end
   end
 end

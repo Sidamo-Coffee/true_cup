@@ -35,8 +35,10 @@
 
   <!-- おすすめ焙煎度 -->
   <section class="bg-white rounded-xl shadow-sm p-6">
-    <div class="flex items-center justify-between mb-2">
-      <h2 class="text-lg font-semibold"><%= t(".sections.recommendation") %></h2>
+    <%# 根拠バッジが長く、横並びのままだと見出しが1文字ずつ折り返す。
+        狭い幅では縦に積み、見出しは縮ませない %>
+    <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between mb-2">
+      <h2 class="text-lg font-semibold shrink-0"><%= t(".sections.recommendation") %></h2>
       <% if @recommended_roast&.dig(:available) %>
         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
           <%= @recommended_roast[:reason] %>
@@ -78,6 +80,11 @@
             </p>
           </div>
         </div>
+      <% end %>
+      <% if @recommended_roast[:notice].present? %>
+        <p class="text-xs text-gray-500 mt-4 leading-relaxed">
+          <%= @recommended_roast[:notice] %>
+        </p>
       <% end %>
       <div class="mt-4 flex flex-col sm:flex-row gap-3">
         <%= link_to t(".actions.record"),
@@ -123,7 +130,14 @@
 
         <% if @preference_all[:roast_available] %>
           <p class="text-base font-semibold text-amber-800">
-            <%= t(".insights.summary_roast", roast: @preference_all[:summary_roast]) %>
+            <% labels = @preference_all[:summary_roast_labels] %>
+            <% if !@preference_all[:summary_tied] %>
+              <%= t(".insights.summary_roast", roast: @preference_all[:summary_roast]) %>
+            <% elsif labels.size == 2 %>
+              <%= t(".insights.summary_roast_tied_two", first: labels.first, second: labels.second) %>
+            <% else %>
+              <%= t(".insights.summary_roast_tied_many") %>
+            <% end %>
           </p>
           <p class="text-xs text-gray-500">
             <%= t(".insights.target_count", count: @preference_all[:roast_logs_count]) %>
@@ -160,7 +174,14 @@
 
         <% if @preference_liked[:roast_available] %>
           <p class="text-base font-semibold text-amber-800">
-            <%= t(".insights.summary_roast", roast: @preference_liked[:summary_roast]) %>
+            <% labels = @preference_liked[:summary_roast_labels] %>
+            <% if !@preference_liked[:summary_tied] %>
+              <%= t(".insights.summary_roast", roast: @preference_liked[:summary_roast]) %>
+            <% elsif labels.size == 2 %>
+              <%= t(".insights.summary_roast_tied_two", first: labels.first, second: labels.second) %>
+            <% else %>
+              <%= t(".insights.summary_roast_tied_many") %>
+            <% end %>
           </p>
           <p class="text-xs text-gray-500">
             <%= t(".insights.target_count", count: @preference_liked[:roast_logs_count]) %>
@@ -186,13 +207,8 @@
       </div>
     </div>
 
-    <%# 補足メッセージ（おすすめの確からしさ）と、次の段階までの進み具合 %>
-    <% if @recommended_roast[:notice].present? %>
-      <p class="text-xs text-gray-500 mt-4 leading-relaxed">
-        <%= @recommended_roast[:notice] %>
-      </p>
-    <% end %>
-
+    <%# 次の段階までの進み具合。おすすめの確からしさ（notice）は、
+        何を修飾しているか分かるようおすすめカード側に置いている（#143） %>
     <% if @recommended_roast[:progress].present? %>
       <div class="mt-4">
         <%= render "shared/recommendation_progress", progress: @recommended_roast[:progress] %>

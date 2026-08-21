@@ -37,22 +37,25 @@ class PreferenceSummary
 
     roast_pie = roast_counts.transform_keys { |k| roast_label(k) }
 
-    ranking =
-      roast_counts
-        .sort_by { |_, c| -c }
-        .first(3)
-        .map do |k, c|
-          {
-            label: roast_label(k),
-            percent: total.zero? ? 0 : (c / total * 100).round,
-            count: c
-          }
-        end
+    # 同数の焙煎度に別々の順位を振ると、並び順だけで優劣がついたように見える。
+    # 件数が同じなら同順位にする（#144）。
+    #
+    # 第2キーに焙煎度の定義順を入れて並びを決定づける。GROUP BY は順序を保証せず、
+    # Ruby の sort_by も同値では入力順のままなので、これが無いと同数のときの
+    # 表示順（見出しの左右・Top3 の切り出し）が実行のたびに変わりうる。
+    sorted_roasts = roast_counts.sort_by { |k, c| [ -c, roast_order(k) ] }
+
+    ranking = build_ranking(sorted_roasts, total)
+
+    summary_keys   = []
+    summary_labels = []
 
     if roast_logs_count.positive?
-      top_key = pick_top_roast_key(roast_counts, logs_with_roast)
-      summary_label = roast_label(top_key)
-      summary_key   = CoffeeLog.roast_levels.key(top_key) || top_key.to_s
+      # 件数が最多の焙煎度。同数のときは一つに絞らず全て返す。
+      # 2件と2件なのに片方を「最も」と呼ぶのは事実と違うため（#144）。
+      top_keys       = top_roast_keys(sorted_roasts)
+      summary_keys   = top_keys.map { |k| CoffeeLog.roast_levels.key(k) || k.to_s }
+      summary_labels = top_keys.map { |k| roast_label(k) }
 
       # 「よく飲んでいる」焙煎度（上の summary_*）とは別に、
       # 「評価が高い」焙煎度を出す。おすすめはこちらを根拠にする（#117）。
@@ -87,14 +90,19 @@ class PreferenceSummary
       taste_bar: taste_bar,
       ranking: ranking,
 
-      summary_roast: summary_label,
-      summary_roast_key: summary_key,
+      # 同数でない場合の1件。同数のときは見出しが summary_roast_labels を使う
+      summary_roast: summary_labels.first,
+
+      # 同数の焙煎度。tied が true のとき、見出しは「同じくらい」と表現する
+      summary_roast_labels: summary_labels,
+      summary_roast_keys: summary_keys,
+      summary_tied: summary_keys.size > 1,
 
       # 評価が最も高い焙煎度。件数最多の summary_* とは異なりうる
       top_rated_roast: rated_label,
       top_rated_roast_key: rated_key,
       top_rated_average: rated_avg,
-      reason: summary_reason(roast_logs_count),
+      reason: summary_reason(roast_logs_count, summary_keys.size > 1),
       charts_reason: scope_reason
     }
   end
@@ -108,6 +116,10 @@ class PreferenceSummary
       roast_available: false,
       roast_logs_count: 0,
       unknown_roast_count: 0,
+      summary_roast: nil,
+      summary_roast_keys: [],
+      summary_roast_labels: [],
+      summary_tied: false,
       scope: @scope
     }
   end
@@ -132,7 +144,11 @@ class PreferenceSummary
     end
   end
 
-  def summary_reason(roast_logs_count)
+  # 見出しの根拠。同数のときは「最も飲まれている焙煎度です」と言わない。
+  # 見出しが一つに絞らなかったのに、直下で絞ったことにすると矛盾して読めるため（#144）。
+  def summary_reason(roast_logs_count, tied)
+    return tied_reason(roast_logs_count) if tied
+
     case @scope
     when :liked
       "★4以上の評価をした記録のうち、焙煎度を記録した#{roast_logs_count}件の中で最も飲まれている焙煎度です。"
@@ -141,9 +157,46 @@ class PreferenceSummary
     end
   end
 
+  def tied_reason(roast_logs_count)
+    case @scope
+    when :liked
+      "★4以上の評価をした記録のうち、焙煎度を記録した#{roast_logs_count}件をもとにした集計です。"
+    else
+      "焙煎度を記録した#{roast_logs_count}件をもとにした集計です。"
+    end
+  end
+
   def roast_label(key)
     enum_key = key.is_a?(Integer) ? CoffeeLog.roast_levels.key(key) : key.to_s
     ROAST_LABELS.fetch(enum_key, enum_key)
+  end
+
+  # 件数が最多の焙煎度。同数ならすべて返す（並び順は sorted_roasts に従う）。
+  def top_roast_keys(sorted_roasts)
+    max = sorted_roasts.first.last
+    sorted_roasts.take_while { |_, c| c == max }.map(&:first)
+  end
+
+  # Top3。ただし3位と同数のものは切り落とさない。
+  # 同順位にした以上、「同じ #1 なのに1つだけ載らない」のは説明がつかないため（#144）。
+  def build_ranking(sorted_roasts, total)
+    counts = sorted_roasts.map(&:last)
+
+    sorted_roasts.filter_map do |k, c|
+      rank = counts.index(c) + 1
+      next if rank > 3
+
+      {
+        rank: rank,
+        label: roast_label(k),
+        percent: total.zero? ? 0 : (c / total * 100).round,
+        count: c
+      }
+    end
+  end
+
+  def roast_order(key)
+    key.is_a?(Integer) ? key : CoffeeLog.roast_levels.fetch(key.to_s, 99)
   end
 
   # 平均評価が最も高い焙煎度を選ぶ。
@@ -161,15 +214,6 @@ class PreferenceSummary
 
     max_count  = candidates.map { |k| roast_counts[k].to_i }.max
     candidates = candidates.select { |k| roast_counts[k].to_i == max_count }
-    return candidates.first if candidates.size == 1
-
-    pick_latest(candidates, logs)
-  end
-
-  # 件数が同数のときは、直近で飲んだ焙煎度を優先（決め打ちでOKなMVP向け）
-  def pick_top_roast_key(roast_counts, logs)
-    max = roast_counts.values.max
-    candidates = roast_counts.select { |_, c| c == max }.keys
     return candidates.first if candidates.size == 1
 
     pick_latest(candidates, logs)

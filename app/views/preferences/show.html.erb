@@ -27,27 +27,21 @@
       <div class="rounded-xl border bg-white p-6 shadow-sm space-y-2">
         <% summary_suffix_key = (@scope == "liked") ? "liked" : "all" %>
         <p class="text-lg font-semibold text-amber-800">
-          <%= t(".summary.text", roast: @preference[:summary_roast], suffix: t(".summary.suffix.#{summary_suffix_key}")) %>
+          <% labels = @preference[:summary_roast_labels] %>
+          <% if !@preference[:summary_tied] %>
+            <%= t(".summary.text", roast: @preference[:summary_roast],
+                  suffix: t(".summary.suffix.#{summary_suffix_key}")) %>
+          <% elsif labels.size == 2 %>
+            <%= t(".summary.tied_two", first: labels.first, second: labels.second,
+                  suffix: t(".summary.suffix_tied.#{summary_suffix_key}")) %>
+          <% else %>
+            <%= t(".summary.tied_many", suffix: t(".summary.suffix_tied.#{summary_suffix_key}")) %>
+          <% end %>
         </p>
 
         <p class="text-sm text-gray-600">
           <%= @preference[:reason] %>
         </p>
-
-        <% if @recommended_roast[:notice].present? %>
-          <p class="text-xs text-gray-500">
-            <%= @recommended_roast[:notice] %>
-          </p>
-        <% end %>
-
-      </div>
-    <% end %>
-
-    <%# 進捗はサマリーカードの有無に関わらず出す。カード内に置くと、
-        焙煎度の傾向が出せない状態のときだけ進捗も消えてしまう %>
-    <% if @recommended_roast[:progress].present? %>
-      <div class="rounded-xl border bg-white p-6 shadow-sm">
-        <%= render "shared/recommendation_progress", progress: @recommended_roast[:progress] %>
       </div>
     <% end %>
 
@@ -96,10 +90,11 @@
       <h2 class="text-lg font-semibold mb-4"><%= t(".ranking.title") %></h2>
 
       <div class="space-y-3">
-        <% @preference[:ranking].each_with_index do |item, idx| %>
+        <% @preference[:ranking].each do |item| %>
           <div class="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p class="text-sm text-gray-500">#<%= idx + 1 %></p>
+              <%# 同数なら同じ順位。並び順で優劣がついたように見せない（#144） %>
+              <p class="text-sm text-gray-500">#<%= item[:rank] %></p>
               <p class="text-lg font-semibold text-gray-900"><%= item[:label] %></p>
               <p class="text-sm text-gray-600">
                 <%= t(".ranking.row", percent: item[:percent], count: item[:count]) %>
@@ -113,11 +108,6 @@
         <%= t(".ranking.note") %>
       </p>
     </div>
-    <% elsif @recommended_roast[:notice].present? %>
-      <%# サマリーカードを出していないぶん、おすすめの確からしさはここで伝える %>
-      <p class="text-xs text-gray-500 leading-relaxed">
-        <%= @recommended_roast[:notice] %>
-      </p>
     <% end %>
   <% end %>
 </div>
