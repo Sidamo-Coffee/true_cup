@@ -150,6 +150,33 @@ RSpec.describe "Preferences", type: :request do
         end
       end
 
+      context "★4以上の記録で2つが同点、どちらも診断結果でない場合" do
+        before do
+          create(:taste_profile, user: user, preferred_roast: :medium)
+          3.times { create(:coffee_log, :light_roast, user: user, overall_rating: 5) }
+          3.times { create(:coffee_log, :dark_roast,  user: user, overall_rating: 5) }
+        end
+
+        it "2つ並んでいることが読み取れること" do
+          # 「「浅煎り・深煎り」が合っているようです」だと1つの焙煎度に読め、
+          # おすすめの「まだ分かれていません」と食い違って見える
+          get preferences_path
+
+          expect(response.body).to include(
+            ERB::Util.html_escape(
+              I18n.t("preferences.show.gap.lead_diverged_tied",
+                     diagnosed: "中煎り", actual: "浅煎り・深煎り")
+            )
+          )
+          expect(response.body).not_to include(
+            ERB::Util.html_escape(
+              I18n.t("preferences.show.gap.lead_diverged", diagnosed: "中煎り",
+                     actual: "浅煎り・深煎り")
+            )
+          )
+        end
+      end
+
       # #146 焙煎度が同点で絞り込めない場合
       context "★4以上の記録で、3つの焙煎度が同点の場合" do
         before do
