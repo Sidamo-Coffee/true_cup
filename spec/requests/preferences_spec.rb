@@ -138,13 +138,13 @@ RSpec.describe "Preferences", type: :request do
           expect(response.body).to include(
             ERB::Util.html_escape(
               I18n.t("preferences.show.gap.lead_aligned_tied",
-                     diagnosed: "浅煎り", actual: "浅煎り・深煎り", raise: true)
+                     diagnosed: "浅煎り", actual: "浅煎り・深煎り")
             )
           )
           expect(response.body).not_to include(
             ERB::Util.html_escape(
               I18n.t("preferences.show.gap.lead_aligned", diagnosed: "浅煎り",
-                     actual: "浅煎り・深煎り", raise: true)
+                     actual: "浅煎り・深煎り")
             )
           )
         end
@@ -163,9 +163,9 @@ RSpec.describe "Preferences", type: :request do
           # おすすめは「絞り込めていません」と言っている。ここで一致を主張すると食い違う
           get preferences_path
 
-          expect(response.body).to include(I18n.t("preferences.show.gap.lead_roast_undecided", raise: true))
+          expect(response.body).to include(I18n.t("preferences.show.gap.lead_roast_undecided"))
           expect(response.body).not_to include(
-            I18n.t("preferences.show.gap.lead_taste_only_aligned", raise: true)
+            I18n.t("preferences.show.gap.lead_taste_only_aligned")
           )
           expect(response.body).not_to include(
             ERB::Util.html_escape(

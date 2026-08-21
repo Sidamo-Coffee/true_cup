@@ -87,12 +87,26 @@ class RecommendedRoast
   #
   # 低評価を先に見る。全部★2で3つ並んだ状態は「同点で絞れない」より
   # 「まだ好みに合うものが無い」の方が実態に近く、次の一手も変わるため。
+  #
+  # 同点は★4以上と全記録の両方で見る。★4以上だけが同点で全記録がまだ少ない状態
+  # （★4以上が3〜4件）を見落とすと、「あとN件でおすすめを出せます」と約束してから
+  # 記録が増えた途端に進捗ごと消える（#146 のレビュー指摘）。
   def stalled_reason
-    return nil unless @all[:roast_available] && @all[:roast_logs_count].to_i >= MIN_ALL
+    return :low_rated if enough_all_logs? && @all[:top_rated_average].to_f < MIN_AVERAGE_RATING
+    return :undecided if tied_beyond_limit?(@liked, MIN_LIKED) || tied_beyond_limit?(@all, MIN_ALL)
 
-    return :low_rated if @all[:top_rated_average].to_f < MIN_AVERAGE_RATING
+    nil
+  end
 
-    :undecided if decidable_keys(@all).empty?
+  def enough_all_logs?
+    @all[:roast_available] && @all[:roast_logs_count].to_i >= MIN_ALL
+  end
+
+  # 件数は足りているのに、同点が多すぎて絞り込めない
+  def tied_beyond_limit?(preference, minimum)
+    preference[:roast_available] &&
+      preference[:roast_logs_count].to_i >= minimum &&
+      decidable_keys(preference).empty?
   end
 
   def build(roast_keys:, labels:, scope_key:, n:, from_logs:, stalled: nil)

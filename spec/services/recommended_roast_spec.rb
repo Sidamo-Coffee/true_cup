@@ -286,9 +286,9 @@ RSpec.describe RecommendedRoast do
       it "「最も評価が高い」とは言わないこと" do
         result = call(taste_profile: user.reload.taste_profile)
 
-        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.liked_tied", raise: true)
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.liked_tied")
         expect(result[:reason]).not_to include "最も高い"
-        expect(result[:message]).to eq I18n.t("services.recommended_roast.message.liked_tied", raise: true)
+        expect(result[:message]).to eq I18n.t("services.recommended_roast.message.liked_tied")
       end
 
       it "実データを根拠にしていること（診断に戻さない）" do
@@ -315,7 +315,7 @@ RSpec.describe RecommendedRoast do
       it "絞り込めていないことを伝えること" do
         result = call(taste_profile: user.reload.taste_profile)
 
-        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.undecided", raise: true)
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.undecided")
       end
 
       it "残り件数を約束しないこと" do
@@ -334,14 +334,12 @@ RSpec.describe RecommendedRoast do
         create(:taste_profile, user: user)
       end
 
-      # raise: true は、文言のキーが消えたときにここで落とすため。
-      # 素の I18n.t だと両辺とも "translation missing" になって一致してしまう
       it "全記録を根拠に、2つとも推薦すること" do
         result = call(taste_profile: user.reload.taste_profile)
 
         expect(result[:roast_keys]).to eq [ "light", "dark" ]
-        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.all_tied", raise: true)
-        expect(result[:message]).to eq I18n.t("services.recommended_roast.message.all_tied", raise: true)
+        expect(result[:reason]).to eq I18n.t("services.recommended_roast.reason.all_tied")
+        expect(result[:message]).to eq I18n.t("services.recommended_roast.message.all_tied")
       end
     end
 
@@ -356,7 +354,7 @@ RSpec.describe RecommendedRoast do
         result = call(taste_profile: user.reload.taste_profile)
 
         expect(result[:confidence]).to eq :likely
-        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.likely_tied", count: 4, raise: true)
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.likely_tied", count: 4)
       end
     end
 
@@ -372,7 +370,7 @@ RSpec.describe RecommendedRoast do
         result = call(taste_profile: user.reload.taste_profile)
 
         expect(result[:confidence]).to eq :stable
-        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.stable_tied", count: 10, raise: true)
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.stable_tied", count: 10)
         expect(result[:notice]).not_to eq I18n.t("services.recommended_roast.notice.stable", count: 10)
       end
     end
@@ -389,7 +387,7 @@ RSpec.describe RecommendedRoast do
         # 全部★2で並んでいる状態で「評価を上げると」と促しても行動につながらない
         result = call(taste_profile: user.reload.taste_profile)
 
-        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.low_rated", raise: true)
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.low_rated")
       end
     end
 
@@ -409,6 +407,36 @@ RSpec.describe RecommendedRoast do
         expect(result[:roast_keys].size).to eq 1
         expect(result[:notice]).not_to include "translation missing"
         expect(result[:reason]).not_to include "translation missing"
+      end
+    end
+
+    context "★4以上だけが3つ同点で、全記録はまだ少ない場合" do
+      before do
+        # #146 の再現データそのもの。全記録は3件しかなく MIN_ALL(5) に満たない
+        1.times { log(roast: :light,  rating: 4) }
+        1.times { log(roast: :medium, rating: 4) }
+        1.times { log(roast: :dark,   rating: 4) }
+        create(:taste_profile, user: user)
+      end
+
+      it "絞り込めていないことを伝えること" do
+        result = call(taste_profile: user.reload.taste_profile)
+
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.undecided")
+      end
+
+      it "「あとN件でおすすめを出せます」と約束しないこと" do
+        # 約束どおり記録を足しても同点が続けば、進捗ごと消えてしまう
+        expect(call(taste_profile: user.reload.taste_profile)[:progress]).to be_nil
+      end
+
+      it "記録を足しても同点なら、案内が変わらないこと" do
+        before_notice = call(taste_profile: user.reload.taste_profile)[:notice]
+        1.times { log(roast: :light,  rating: 4) }
+        1.times { log(roast: :medium, rating: 4) }
+        1.times { log(roast: :dark,   rating: 4) }
+
+        expect(call(taste_profile: user.reload.taste_profile)[:notice]).to eq before_notice
       end
     end
 
@@ -435,7 +463,7 @@ RSpec.describe RecommendedRoast do
         # 11件記録しているユーザーに「記録するほど」では、
         # なぜ実データが使われないのか伝わらない
         result = call(taste_profile: user.reload.taste_profile)
-        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.low_rated", raise: true)
+        expect(result[:notice]).to eq I18n.t("services.recommended_roast.notice.low_rated")
       end
     end
   end

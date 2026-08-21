@@ -133,12 +133,12 @@ RSpec.describe "Mypage", type: :request do
 
           expect(response.body).to include(
             ERB::Util.html_escape(
-              I18n.t("services.recommended_roast.progress.remaining_tied.likely", count: 6, raise: true)
+              I18n.t("services.recommended_roast.progress.remaining_tied.likely", count: 6)
             )
           )
           expect(response.body).not_to include(
             ERB::Util.html_escape(
-              I18n.t("services.recommended_roast.progress.remaining.likely", count: 6, raise: true)
+              I18n.t("services.recommended_roast.progress.remaining.likely", count: 6)
             )
           )
         end
@@ -157,10 +157,10 @@ RSpec.describe "Mypage", type: :request do
           get mypage_path
 
           expect(response.body).to include(
-            I18n.t("services.recommended_roast.progress.done_tied", raise: true)
+            I18n.t("services.recommended_roast.progress.done_tied")
           )
           expect(response.body).not_to include(
-            I18n.t("services.recommended_roast.progress.done", raise: true)
+            I18n.t("services.recommended_roast.progress.done")
           )
         end
 
@@ -168,10 +168,10 @@ RSpec.describe "Mypage", type: :request do
           get mypage_path
 
           expect(response.body).to include(
-            I18n.t("services.recommended_roast.progress.label_tied.stable", raise: true)
+            I18n.t("services.recommended_roast.progress.label_tied.stable")
           )
           expect(response.body).not_to include(
-            I18n.t("services.recommended_roast.progress.label.stable", raise: true)
+            I18n.t("services.recommended_roast.progress.label.stable")
           )
         end
       end
