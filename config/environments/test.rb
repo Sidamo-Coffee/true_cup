@@ -57,7 +57,9 @@ Rails.application.configure do
   config.active_support.disallowed_deprecation_warnings = []
 
   # Raises error for missing translations.
-  # config.i18n.raise_on_missing_translations = true
+  # 文言のキーが消えたら落とす。素の I18n.t は未定義キーでも "translation missing"
+  # を返すため、spec で突き合わせても両辺が一致して素通りする（#146）
+  config.i18n.raise_on_missing_translations = true
 
   # Annotate rendered view with file names.
   # config.action_view.annotate_rendered_view_with_filenames = true

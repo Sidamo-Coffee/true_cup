@@ -137,26 +137,64 @@ RSpec.describe PreferenceSummary do
       result = described_class.new(user).call
 
       expect(result[:summary_roast_keys]).to eq [ "dark" ] # よく飲んでいるのは深煎り
-      expect(result[:top_rated_roast_key]).to eq "light"  # 評価が高いのは浅煎り
+      expect(result[:top_rated_roast_keys]).to eq [ "light" ]  # 評価が高いのは浅煎り
       expect(result[:top_rated_average]).to eq 5.0
     end
 
     it "記録が1件だけの焙煎度は、2件以上ある焙煎度がある限り選ばないこと" do
       1.times { log(roast: :light, rating: 5) }
       5.times { log(roast: :dark,  rating: 4) }
-      expect(described_class.new(user).call[:top_rated_roast_key]).to eq "dark"
+      expect(described_class.new(user).call[:top_rated_roast_keys]).to eq [ "dark" ]
+    end
+
+    # #146 評価も件数も並んだら、そこで打ち切って両方返す
+    it "評価も件数も同点なら、片方に絞らないこと" do
+      2.times { log(roast: :dark,  rating: 5) }
+      2.times { log(roast: :light, rating: 5) }
+      result = described_class.new(user).call
+
+      expect(result[:top_rated_roast_keys]).to eq [ "light", "dark" ]
+      expect(result[:top_rated_tied]).to be true
+    end
+
+    it "記録日が違っても、同点なら片方を代表にしないこと" do
+      # 記録日で崩す旧タイブレークは廃止した。同じ日に記録すると決着せず、
+      # 最後は enum の定義順という説明できない基準になっていた
+      log(roast: :dark,  rating: 5, drank_on: Date.current)
+      log(roast: :dark,  rating: 5, drank_on: Date.current)
+      log(roast: :light, rating: 5, drank_on: Date.current - 30)
+      log(roast: :light, rating: 5, drank_on: Date.current - 30)
+
+      expect(described_class.new(user).call[:top_rated_roast_keys]).to eq [ "light", "dark" ]
+    end
+
+    it "同点の並び順が、集計の返り順によらず焙煎度の定義順で決まること" do
+      # GROUP BY は順序を保証しない。記録から組み立てると、たまたま定義順で
+      # 返るせいで並べ替えを消しても気づけないため、逆順のハッシュを直接渡す
+      summary = described_class.new(user)
+      avgs   = { "dark" => 5.0, "light" => 5.0 }
+      counts = { "dark" => 2, "light" => 2 }
+
+      expect(summary.send(:top_rated_roast_keys, avgs, counts)).to eq [ "light", "dark" ]
+    end
+
+    it "同点でなければ絞り込めていると分かること" do
+      2.times { log(roast: :dark,  rating: 5) }
+      2.times { log(roast: :light, rating: 3) }
+
+      expect(described_class.new(user).call[:top_rated_tied]).to be false
     end
 
     it "2件以上ある焙煎度が無ければ、全体で評価の高いものを選ぶこと" do
       log(roast: :light, rating: 5)
       log(roast: :dark,  rating: 3)
-      expect(described_class.new(user).call[:top_rated_roast_key]).to eq "light"
+      expect(described_class.new(user).call[:top_rated_roast_keys]).to eq [ "light" ]
     end
 
     it "評価が同点なら件数の多い方を選ぶこと" do
       2.times { log(roast: :light, rating: 5) }
       4.times { log(roast: :dark,  rating: 5) }
-      expect(described_class.new(user).call[:top_rated_roast_key]).to eq "dark"
+      expect(described_class.new(user).call[:top_rated_roast_keys]).to eq [ "dark" ]
     end
 
     it "平均は丸めずに返すこと" do
@@ -170,7 +208,7 @@ RSpec.describe PreferenceSummary do
     it "焙煎度が不明な記録は対象にしないこと" do
       3.times { log(roast: :unknown, rating: 5) }
       2.times { log(roast: :dark,    rating: 3) }
-      expect(described_class.new(user).call[:top_rated_roast_key]).to eq "dark"
+      expect(described_class.new(user).call[:top_rated_roast_keys]).to eq [ "dark" ]
     end
   end
 
@@ -225,6 +263,16 @@ RSpec.describe PreferenceSummary do
       2.times do
         expect(described_class.new(user).call[:summary_roast_labels]).to eq [ "浅煎り", "深煎り" ]
       end
+    end
+
+    it "同数の並び順が、集計の返り順によらないこと" do
+      # 記録から組み立てるとたまたま定義順で返るため、並べ替えを消しても気づけない。
+      # 逆順のハッシュを直接渡して、第2キーが効いていることを確かめる
+      summary = described_class.new(user)
+      reversed = { "dark" => 2, "light" => 2, "medium" => 1 }
+
+      expect(summary.send(:sorted_roast_counts, reversed).map(&:first))
+        .to eq [ "light", "dark", "medium" ]
     end
 
     it "3位と同数の焙煎度をランキングから切り落とさないこと" do

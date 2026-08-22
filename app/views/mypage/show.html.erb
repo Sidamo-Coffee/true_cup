@@ -49,8 +49,9 @@
       <% end %>
     </div>
     <% if @recommended_roast&.dig(:available) %>
+      <%# 同点なら2つ併記する。片方を「最も評価が高い」と呼べないため（#146） %>
       <p class="text-2xl font-semibold text-amber-800">
-        <%= @recommended_roast[:label] %>
+        <%= @recommended_roast[:labels].join("・") %>
       </p>
       <% if @recommended_roast[:message].present? %>
         <p class="text-sm text-gray-700 mt-2 mb-2">
@@ -60,12 +61,17 @@
           <%= t(".recommendation.notice_update") %>
         </p>
       <% end %>
-      <% if @roast_guide.present? %>
-        <div class="mt-4 space-y-3">
+      <%# 2つ併記のときは、どちらのガイドか分かるよう焙煎度ごとに区切る %>
+      <% @roast_guides.each_with_index do |guide, idx| %>
+        <div class="mt-4 space-y-3 <%= "border-t pt-4" if @recommended_roast[:tied] && idx.positive? %>">
+          <% if @recommended_roast[:tied] %>
+            <p class="text-sm font-semibold text-amber-800"><%= guide[:label] %></p>
+          <% end %>
+
           <div>
             <p class="text-sm font-semibold text-gray-900"><%= t(".recommendation.words_title") %></p>
             <div class="mt-2 flex flex-wrap gap-2">
-              <% @roast_guide[:words].each do |w| %>
+              <% guide[:words].each do |w| %>
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
                   <%= w %>
                 </span>
@@ -76,7 +82,7 @@
           <div>
             <p class="text-sm font-semibold text-gray-900"><%= t(".recommendation.tell_title") %></p>
             <p class="mt-2 text-sm text-gray-700">
-              「<%= @roast_guide[:tell] %>」
+              「<%= guide[:tell] %>」
             </p>
           </div>
         </div>
@@ -211,7 +217,8 @@
         何を修飾しているか分かるようおすすめカード側に置いている（#143） %>
     <% if @recommended_roast[:progress].present? %>
       <div class="mt-4">
-        <%= render "shared/recommendation_progress", progress: @recommended_roast[:progress] %>
+        <%= render "shared/recommendation_progress", progress: @recommended_roast[:progress],
+                   tied: @recommended_roast[:tied] %>
       </div>
     <% end %>
   </section>

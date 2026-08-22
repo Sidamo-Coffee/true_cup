@@ -4,9 +4,15 @@
 
   <p class="text-sm text-gray-700 leading-relaxed">
     <% if gap[:roast].present? %>
-      <%# 味だけズレている場合に「診断ではAでしたが実際もA」とならないよう、焙煎度の一致で分岐する %>
-      <%= t("preferences.show.gap.#{gap[:roast][:match] ? 'lead_aligned' : 'lead_diverged'}",
+      <%# 味だけズレている場合に「診断ではAでしたが実際もA」とならないよう、焙煎度の一致で分岐する。
+          一致していても同点なら、並んでいるもう片方を隠さない（#146） %>
+      <% base_key = gap[:roast][:match] ? "lead_aligned" : "lead_diverged" %>
+      <% lead_key = (gap[:roast][:actual_keys].size > 1) ? "#{base_key}_tied" : base_key %>
+      <%= t("preferences.show.gap.#{lead_key}",
             diagnosed: gap[:roast][:diagnosed_label], actual: gap[:roast][:actual_label]) %>
+    <% elsif gap[:roast_undecided] %>
+      <%# 焙煎度が同点で絞り込めない場合。「一致しています」とは言えない %>
+      <%= t("preferences.show.gap.lead_roast_undecided") %>
     <% else %>
       <%# 焙煎度が不明な記録ばかりの場合は味だけで語る %>
       <%= t("preferences.show.gap.#{gap[:verdict] == :diverged ? 'lead_taste_only_diverged' : 'lead_taste_only_aligned'}") %>

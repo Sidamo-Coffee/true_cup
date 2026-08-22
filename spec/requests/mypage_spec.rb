@@ -93,6 +93,105 @@ RSpec.describe "Mypage", type: :request do
         end
       end
 
+      # #146 おすすめの評価が同点のとき
+      context "評価が同点の焙煎度が2つある場合" do
+        before do
+          create(:taste_profile, user: user)
+          2.times { create(:coffee_log, :light_roast, user: user, overall_rating: 5) }
+          2.times { create(:coffee_log, :dark_roast,  user: user, overall_rating: 5) }
+        end
+
+        it "2つ併記すること" do
+          get mypage_path
+          expect(response.body).to include("浅煎り・深煎り")
+        end
+
+        it "「評価が最も高い」とは表示しないこと" do
+          get mypage_path
+          expect(response.body).not_to include(I18n.t("services.recommended_roast.reason.liked"))
+          expect(response.body).to include(I18n.t("services.recommended_roast.reason.liked_tied"))
+        end
+
+        it "焙煎度ごとの購入ガイドを両方出すこと" do
+          get mypage_path
+          expect(response.body).to include(ERB::Util.html_escape(RoastGuide.call("light")[:tell]))
+          expect(response.body).to include(ERB::Util.html_escape(RoastGuide.call("dark")[:tell]))
+        end
+      end
+
+      context "同点のまま、件数がまだ足りない場合" do
+        before do
+          create(:taste_profile, user: user)
+          2.times { create(:coffee_log, :light_roast, user: user, overall_rating: 5) }
+          2.times { create(:coffee_log, :dark_roast,  user: user, overall_rating: 5) }
+        end
+
+        it "「あとN件で安定します」と約束しないこと" do
+          # 同点のまま10件に達しても、そこで出るのは「まだ分かれていません」。
+          # 件数さえ増えれば安定する、という約束は守れない
+          get mypage_path
+
+          expect(response.body).to include(
+            ERB::Util.html_escape(
+              I18n.t("services.recommended_roast.progress.remaining_tied.likely", count: 6)
+            )
+          )
+          expect(response.body).not_to include(
+            ERB::Util.html_escape(
+              I18n.t("services.recommended_roast.progress.remaining.likely", count: 6)
+            )
+          )
+        end
+      end
+
+      context "同点のまま、件数だけ十分に集まった場合" do
+        before do
+          create(:taste_profile, user: user)
+          5.times { create(:coffee_log, :light_roast, user: user, overall_rating: 5) }
+          5.times { create(:coffee_log, :dark_roast,  user: user, overall_rating: 5) }
+        end
+
+        it "進捗バーが「十分な記録が集まりました」で終わらせないこと" do
+          # 件数は満たしているが、どちらが好きかは決まっていない。
+          # バーだけ「完成」と言うと、すぐ上の「まだ分かれていません」と食い違う
+          get mypage_path
+
+          expect(response.body).to include(
+            I18n.t("services.recommended_roast.progress.done_tied")
+          )
+          expect(response.body).not_to include(
+            I18n.t("services.recommended_roast.progress.done")
+          )
+        end
+
+        it "段階のラベルも言い切らないこと" do
+          get mypage_path
+
+          expect(response.body).to include(
+            I18n.t("services.recommended_roast.progress.label_tied.stable")
+          )
+          expect(response.body).not_to include(
+            I18n.t("services.recommended_roast.progress.label.stable")
+          )
+        end
+      end
+
+      context "評価が同点の焙煎度が3つある場合" do
+        before do
+          create(:taste_profile, user: user)
+          2.times { create(:coffee_log, :light_roast,       user: user, overall_rating: 5) }
+          2.times { create(:coffee_log, user: user, roast_level: :medium, overall_rating: 5) }
+          2.times { create(:coffee_log, user: user, roast_level: :medium_dark, overall_rating: 5) }
+        end
+
+        it "絞り込めていないことを伝えること" do
+          get mypage_path
+          expect(response.body).to include(
+            ERB::Util.html_escape(I18n.t("services.recommended_roast.notice.undecided"))
+          )
+        end
+      end
+
       context "焙煎度が全て不明の記録しかない場合" do
         before { 3.times { create(:coffee_log, user: user, roast_level: :unknown) } }
 
