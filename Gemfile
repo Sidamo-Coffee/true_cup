@@ -8,7 +8,7 @@ gem "sprockets-rails"
 gem "pg", "~> 1.1"
 # Use the Puma web server [https://github.com/puma/puma]
 # 本番の Web サーバー。メジャー更新はデプロイに影響するため個別に検証する（8系は #114）
-gem "puma", "~> 7.2"
+gem "puma", "~> 8.0"
 # Bundle and transpile JavaScript [https://github.com/rails/jsbundling-rails]
 gem "jsbundling-rails"
 # Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
