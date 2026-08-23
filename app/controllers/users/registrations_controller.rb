@@ -65,31 +65,39 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # end
   def after_sign_up_path_for(resource)
     raw = cookies.encrypted[:trial_answers]
+    return new_taste_diagnosis_path if raw.blank?
 
-    if raw.present?
-      begin
-        parsed = JSON.parse(raw) # {"chocolate"=>"...", ...}
-        answers = TasteDiagnosisLogic.extract_answers(ActionController::Parameters.new(answers: parsed)[:answers])
-
-        if answers.present?
-          result = TasteDiagnosisLogic.diagnose(answers)
-          TasteDiagnosisLogic.apply_result_to_user!(user: resource, result: result)
-        end
-      rescue JSON::ParserError
-        # 何もしない（trial無し扱いで通常フローへ）
-      ensure
-        cookies.delete(:trial_answers)
-      end
-
-      # ★ trialあり：診断済みとしてマイページへ
-      return mypage_path
-    end
-
-    # ★ trialなし：従来どおり診断へ
-    new_taste_diagnosis_path
+    # 引き継げたときだけ「診断済み」としてマイページへ送る。
+    # 失敗したのにマイページへ送ると、TasteProfile が無いまま診断済み前提の画面に立たされる（#151）
+    apply_trial_answers(resource, raw) ? mypage_path : new_taste_diagnosis_path
   end
 
   def after_inactive_sign_up_path_for(resource)
     root_path
+  end
+
+  private
+
+  # 試し診断の回答を診断結果として保存する。引き継げたら true。
+  #
+  # 登録そのものは成功しているため、引き継ぎの失敗で登録を巻き戻さない。
+  # Cookie は成否によらず捨てる。壊れた Cookie を残しても次に読んだときまた失敗するだけのため。
+  def apply_trial_answers(user, raw)
+    parsed = JSON.parse(raw)
+    return false unless parsed.is_a?(Hash)
+
+    answers = TasteDiagnosisLogic.extract_answers(
+      ActionController::Parameters.new(answers: parsed)[:answers]
+    )
+    return false if answers.blank?
+
+    result = TasteDiagnosisLogic.diagnose(answers)
+    TasteDiagnosisLogic.apply_result_to_user!(user: user, result: result)
+    true
+  rescue JSON::ParserError, ActiveRecord::RecordInvalid => e
+    Rails.logger.warn("試し診断の引き継ぎに失敗しました: #{e.class}")
+    false
+  ensure
+    cookies.delete(:trial_answers)
   end
 end
