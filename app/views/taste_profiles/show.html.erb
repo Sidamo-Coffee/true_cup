@@ -12,7 +12,9 @@
 
 
 <div class="max-w-3xl mx-auto py-10 px-4">
-  <h1 class="text-2xl font-semibold mb-6 text-center">
+  <%# 狭い幅では text-2xl だと1文字だけ次の行に落ちるため、1段階小さくして1行に収める。
+      text-balance は長音符が行頭に来るので使わない。実測値と経緯は #158 %>
+  <h1 class="text-xl sm:text-2xl font-semibold mb-6 text-center">
     <%= t(".heading") %>
   </h1>
 
