@@ -52,7 +52,9 @@ Rails.application.configure do
   config.force_ssl = true
 
   # Skip http-to-https redirect for the default health check endpoint.
-  # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
+  # Render のヘルスチェックは 3xx も healthy と扱うため、これが無くてもデプロイは通る。
+  # 無駄なリダイレクトを1往復省き、/up を HTTP でも叩けるようにするために有効にしている（#155）。
+  config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT by default
   config.logger = ActiveSupport::Logger.new(STDOUT)
@@ -78,9 +80,43 @@ Rails.application.configure do
   # caching is enabled.
   config.action_mailer.perform_caching = false
 
+  # パスワードリセットのメールに載せる URL のホスト。これが無いと Devise のメール生成が
+  # 「Missing host to link to!」で落ち、パスワードリセットが 500 になる（#155）。
+  # 独自ドメイン（#88）を使うまでは Render が自動で渡す RENDER_EXTERNAL_HOSTNAME をそのまま使う。
+  config.action_mailer.default_url_options = {
+    host: ENV["APP_HOST"].presence || ENV["RENDER_EXTERNAL_HOSTNAME"].presence || "localhost",
+    protocol: "https"
+  }
+
+  # 送信先の SMTP は Render のダッシュボードで設定する。
+  smtp_configured = ENV["SMTP_ADDRESS"].present?
+  smtp_port = ENV["SMTP_PORT"].presence&.to_i || 587
+
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address: ENV["SMTP_ADDRESS"].presence,
+    port: smtp_port,
+    user_name: ENV["SMTP_USER_NAME"].presence,
+    password: ENV["SMTP_PASSWORD"].presence,
+    authentication: ENV["SMTP_AUTHENTICATION"].presence&.to_sym || :plain,
+    # 465 は接続時から TLS、それ以外は STARTTLS に上げる
+    tls: smtp_port == 465,
+    enable_starttls_auto: smtp_port != 465
+  }
+
+  # SMTP 未設定のうちは送信を試みない。試みると到達しない相手への接続で
+  # 1リクエストあたり5秒スレッドを塞ぐ（実測）。
+  config.action_mailer.perform_deliveries = smtp_configured
+
+  # 設定してあるのに送れない場合は握り潰さない。
+  # mail gem は送信の例外を自分でログに出さず、ActionMailer の送信ログ（Delivered / Skipped）は
+  # debug レベルでしか出ない。本番は log_level=info なので、false のままだと
+  # 「設定したのに届かない」障害が痕跡なしで進む（#155 のレビューで実測）。
+  # true にしておけば 500 として例外がリクエストのログに残る。
+  config.action_mailer.raise_delivery_errors = smtp_configured
+
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

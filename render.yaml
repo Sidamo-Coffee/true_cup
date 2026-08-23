@@ -1,0 +1,43 @@
+# Render の Blueprint。サービスを作り直すたびにダッシュボードで設定を入れ直さずに済むよう、
+# 構成をリポジトリ側に持つ。読み込ませ方は docs/deploy.md を参照。
+#
+# データベースはここに定義しない。Render の無料 PostgreSQL は作成から30日で期限切れになるため、
+# 期限の無い Neon を使い、接続文字列を DATABASE_URL で渡す（#155）。
+services:
+  - type: web
+    name: true-cup
+    runtime: ruby
+    plan: free
+    # 日本からの利用を想定してシンガポールに置く。既定は oregon。
+    # リージョンは作成後に変更できないため、作り直しになる点に注意。
+    region: singapore
+    branch: main
+    buildCommand: "./bin/render-build.sh"
+    # Render の Rails 手順に合わせる。Render が PORT を設定するため、
+    # バインド先は Rails 側のホスト（本番は 0.0.0.0）になる。
+    startCommand: "bundle exec rails server"
+    # config/routes.rb の rails/health#show。
+    healthCheckPath: /up
+    envVars:
+      # puma を single mode に保つために 0 を明示する。
+      # Render は 2025-12-08 以降に作られた web サービスに WEB_CONCURRENCY を自動で入れるため、
+      # 「書かない」では防げない。値が 1 以上だと config/puma.rb に workers を書いていなくても
+      # puma 本体がこれを読んで cluster mode になり、無料インスタンスのメモリを圧迫する。
+      # 実測: 0 → single mode / 1 → cluster mode（puma 自身が警告を出す）/ 2 → Workers: 2
+      - key: WEB_CONCURRENCY
+        value: "0"
+      # Render は Ruby ランタイムに RAILS_ENV=production を自動で入れるが、
+      # WEB_CONCURRENCY の件のとおり既定に依存すると読み違えるため明示する。
+      - key: RAILS_ENV
+        value: production
+      # .node-version と同じ値にする。render.yaml のほうが優先されるため、
+      # 片方だけ更新するとビルドの Node だけ古いままになる。両方そろえて変更すること。
+      - key: NODE_VERSION
+        value: 20.19.6
+      # 以下はダッシュボードで入力する。値をこのファイルに書かない（public リポジトリのため）。
+      # config/master.key の中身
+      - key: RAILS_MASTER_KEY
+        sync: false
+      # Neon の接続文字列。プール（-pooler）ではなく直接接続を使う
+      - key: DATABASE_URL
+        sync: false
