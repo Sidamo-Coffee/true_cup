@@ -24,7 +24,17 @@ threads_count = ENV.fetch("RAILS_MAX_THREADS", 3)
 threads threads_count, threads_count
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
-port ENV.fetch("PORT", 3000)
+#
+# ホスト `0.0.0.0` は明示する。Puma 8 は非ループバックの IPv6 インターフェースがある環境では
+# 既定のバインド先が `::` になり、無ければ `0.0.0.0` に戻る（実行環境で変わる）。
+# Render は「web サービスは 0.0.0.0 にバインドすること」を要件としているため、環境任せにしない。
+#
+# ここが効くのは `bundle exec puma` で直接起動した場合と、`bin/rails server` に
+# `-b`/`-p` も `PORT`/`HOST`/`BINDING` も与えられていない場合。それらがあると
+# Rails 側のホスト（本番は 0.0.0.0）で bind が上書きされ、この指定は使われない。
+# Render は PORT を必ず設定するため、起動が `bin/rails server` なら実質 no-op になる。
+# 起動方法によらず 0.0.0.0 にするための保険として置いている。
+port ENV.fetch("PORT", 3000), "0.0.0.0"
 
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
