@@ -12,9 +12,8 @@
 
 
 <div class="max-w-3xl mx-auto py-10 px-4">
-  <%# 390px では text-2xl だと 335px 必要で、使える幅 326px に収まらず「果」だけが
-      次の行に落ちる。狭い幅でだけ1段階小さくして1行に収める（#158）。
-      text-balance も試したが、「コーヒ / ー」と長音符が行頭に来るため採らなかった %>
+  <%# 狭い幅では text-2xl だと1文字だけ次の行に落ちるため、1段階小さくして1行に収める。
+      text-balance は長音符が行頭に来るので使わない。実測値と経緯は #158 %>
   <h1 class="text-xl sm:text-2xl font-semibold mb-6 text-center">
     <%= t(".heading") %>
   </h1>
