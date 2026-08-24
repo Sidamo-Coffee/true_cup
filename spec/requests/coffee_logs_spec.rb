@@ -161,5 +161,61 @@ RSpec.describe "CoffeeLogs", type: :request do
       get coffee_log_path(other_log)
       expect(response).to have_http_status(:not_found)
     end
+
+    it "編集ページにアクセスできないこと" do
+      get edit_coffee_log_path(other_log)
+      expect(response).to have_http_status(:not_found)
+    end
+
+    # 404 を返しつつ書き込みだけ通る壊し方を塞ぐため、ステータスと中身の両方を見る
+    it "更新できないこと" do
+      expect {
+        patch coffee_log_path(other_log), params: {
+          coffee_log: { coffee_name: "書き換えられたコーヒー" }
+        }
+      }.not_to change { other_log.reload.coffee_name }
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    # 削除は消えてから気づくことになるため、件数が減らないところまで確かめる
+    it "削除できないこと" do
+      other_log # 先に作成
+
+      expect {
+        delete coffee_log_path(other_log)
+      }.not_to change(CoffeeLog, :count)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "検索結果に混ざらないこと" do
+      create(:coffee_log, user: user, coffee_name: "自分のブラジル")
+      create(:coffee_log, user: other_user, coffee_name: "他人のブラジル")
+
+      get coffee_logs_path, params: { q: "ブラジル" }
+
+      expect(response.body).to include("自分のブラジル")
+      expect(response.body).not_to include("他人のブラジル")
+    end
+  end
+
+  describe "未ログインの場合" do
+    before { sign_out user }
+
+    it "一覧がログインページにリダイレクトされること" do
+      get coffee_logs_path
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it "記録を削除できないこと" do
+      coffee_log # 先に作成
+
+      expect {
+        delete coffee_log_path(coffee_log)
+      }.not_to change(CoffeeLog, :count)
+
+      expect(response).to redirect_to(new_user_session_path)
+    end
   end
 end
